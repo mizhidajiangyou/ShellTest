@@ -33,7 +33,6 @@ function trim() {
   echo "$trimmed"
 }
 
-
 ### 配置模块 ###
 
 # 获取配置 section key file values
@@ -255,7 +254,7 @@ function urandomIntInLim() {
   local max=$2
   local length=${3:-5} # 如果未指定，则默认为 20
 
-  if (( min > max )); then
+  if ((min > max)); then
     echo 0
   fi
 
@@ -316,10 +315,9 @@ function sendLog() {
     LEVEL="INFO - "
     ;;
   esac
-
   printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1" >>"${LOG_FILE}"
 
-  if [ "${LOG_CONSOLE_PRINT}" == "true" ]; then
+  if ${LOG_CONSOLE_PRINT}; then
     printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1"
   fi
 }
@@ -350,14 +348,14 @@ function pRed() {
 
 # 主函数
 function main() {
-    local cfg_name="globala.cfg"
-    # 文件不存在则创建
-    if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
-       pRed "No file ${cfg_name} in ${SHELL_HOME},init it now !"
-       sleep 3
+  local cfg_name="global.cfg"
+  # 文件不存在则创建
+  if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
+    pRed "No file ${cfg_name} in ${SHELL_HOME},init it now !"
+    sleep 3
     {
-       # shellcheck disable=SC2016
-       echo '# 全局配置
+      # shellcheck disable=SC2016
+      echo '# 全局配置
              # 日志
              [log]
              level = debug
@@ -373,11 +371,12 @@ function main() {
              all = false
              # 是否启用
              use = true'
-    } > "${SHELL_HOME}${cfg_name}"
-    fi
-    # 配置文件名称
-    readConfig "${SHELL_HOME}${cfg_name}"
+    } >"${SHELL_HOME}${cfg_name}"
+  fi
+  # 配置文件名称
+  readConfig "${SHELL_HOME}${cfg_name}"
+  # 确保日志文件存在
+  checkFile "${LOG_FILE}" "force"
 }
 
 main
-
