@@ -287,7 +287,7 @@ function urandomStr() {
   echo "$str"
 }
 
-### 日志管理 ###
+### 日志通知 ###
 # 通用日志管理
 function sendLog() {
   local LEVEL="INFO - "
@@ -324,5 +324,60 @@ function sendLog() {
   fi
 }
 
+# 钉钉通知
+function dingDing() {
+  local mes="$1"
+  DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
+  curl "$DingUrl" \
+    -H 'Content-Type: application/json' \
+    -d "{\"msgtype\": \"text\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"text\": {\"content\":\"自动化通知：${mes}\"}}"
 
-readConfig "${SHELL_HOME}global.cfg"
+}
+
+# 根据配置决定是否使用dingding,发送后退出
+function useDing() {
+  if "${DINGDING_USE}"; then
+    dingDing "$1"
+    exit 1
+  fi
+}
+
+### 打印 ###
+# 红色
+function pRed() {
+  printf "\033[0;31m%s\033[0m\n" "$1"
+}
+
+# 主函数
+function main() {
+    local cfg_name="globala.cfg"
+    # 文件不存在则创建
+    if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
+       pRed "No file ${cfg_name} in ${SHELL_HOME},init it now !"
+       sleep 3
+    {
+       # shellcheck disable=SC2016
+       echo '# 全局配置
+             # 日志
+             [log]
+             level = debug
+             console_print = true
+             file = ${SHELL_HOME}res/log/shell.log
+
+             # 锁
+             [lock]
+             pre_name = ${SHELL_HOME}res/lock/.z_lock_
+
+             [dingding]
+             # 是否@所有人
+             all = false
+             # 是否启用
+             use = true'
+    } > "${SHELL_HOME}${cfg_name}"
+    fi
+    # 配置文件名称
+    readConfig "${SHELL_HOME}${cfg_name}"
+}
+
+main
+
