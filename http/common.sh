@@ -52,7 +52,7 @@ function doHttpRequest {
   fi
 
   # set request headers
-  if [[ -n "$headers" ]]; then
+  if [[ ${#headers[@]} -ne 0 ]]; then
     for header in "${headers[@]}"; do
         cul_option+=("-H" "${header}")
         echo "$header"
