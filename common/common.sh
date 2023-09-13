@@ -332,6 +332,15 @@ function dingDing() {
 
 }
 
+function dingDingMark() {
+  local mes="$1"
+  DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
+  curl "$DingUrl" \
+    -H 'Content-Type: application/json' \
+    -d "{\"msgtype\": \"markdown\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"markdown\": {\"title\":\"report\",  \"text\":\"自动化通知：${mes}\"}}"
+
+}
+
 # 根据配置决定是否使用dingding,发送后退出
 function useDing() {
   if "${DINGDING_USE}"; then
@@ -344,6 +353,25 @@ function useDing() {
 # 红色
 function pRed() {
   printf "\033[0;31m%s\033[0m\n" "$1"
+}
+
+### 装饰器 ###
+# 装饰器函数，实现加锁和解锁逻辑
+function wLock() {
+  local function_name="$1"
+  shift
+
+  # 获取锁
+  flock -n 9 || {
+    sendLog "Unable to acquire lock. Exiting." 2
+    exit 1
+  }
+
+  # 执行被装饰的函数
+  "$function_name" "$@"
+
+  # 释放锁
+  flock -u 9
 }
 
 # 主函数
