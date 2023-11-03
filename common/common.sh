@@ -247,6 +247,25 @@ function zLock() {
   esac
 }
 
+function wait_lock() {
+  local  lock_name=$1
+  local  counter=1
+  local  num=12
+  local  time=10
+  while [ $counter -le $num ]
+  do
+    if [ -f "$lock_name" ]; then
+      sleep $time
+      counter=$((counter + 1))
+    else
+      touch "$lock_name"
+      return 0
+    fi
+  done
+  exit 1
+
+}
+
 ### 随机数模块 ###
 # 取范围内随机数，位数不能超过9
 function urandomIntInLim() {
@@ -324,20 +343,20 @@ function sendLog() {
 
 # 钉钉通知
 function dingDing() {
-  local mes="$1"
+  local mes=( "$@" )
   DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
   curl "$DingUrl" \
     -H 'Content-Type: application/json' \
-    -d "{\"msgtype\": \"text\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"text\": {\"content\":\"自动化通知：${mes}\"}}"
+    -d "{\"msgtype\": \"text\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"text\": {\"content\":\"自动化通知：${mes[*]}\"}}"
 
 }
 
 function dingDingMark() {
-  local mes="$1"
+  local mes=( "$@" )
   DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
   curl "$DingUrl" \
     -H 'Content-Type: application/json' \
-    -d "{\"msgtype\": \"markdown\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"markdown\": {\"title\":\"report\",  \"text\":\"自动化通知：${mes}\"}}"
+    -d "{\"msgtype\": \"markdown\",\"at\":{\"atMobiles\":[${DINGDING_MOBILES}],\"isAtAll\": ""${DINGDING_ALL}""},\"markdown\": {\"title\":\"report\",  \"text\":\"自动化通知：\n ${mes[*]}\"}}"
 
 }
 

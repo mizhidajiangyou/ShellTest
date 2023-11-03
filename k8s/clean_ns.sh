@@ -11,8 +11,6 @@ kubectl proxy &
 for i in ${ns_list[*]}; do
   # echo "$i"
   kubectl get ns "$i" -o json &>."$i".json
-  # 使用 sed 命令进行替换
-  # shellcheck disable=SC2094
   jq .spec={} ."$i".json >.temp && mv .temp ."$i".json
   curl -k -H "Content-Type: application/json" -X PUT --data-binary @."$i".json http://127.0.0.1:8001/api/v1/namespaces/"$i"/finalize
   rm -rf ."$i".json*
