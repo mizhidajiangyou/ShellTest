@@ -3,17 +3,21 @@
 # 数字和符号的映射关系
 declare -A characters
 characters=(
-  ["0"]="  ____  \n / __ \ \n| |  | |\n| |  | |\n \____/ \n"
+  ["0"]="  ____  \n / __ \ \n| |  | |\n| |__| |\n \____/ \n"
   ["1"]="  __   \n /_ |  \n  | |  \n  | |  \n  |_|  \n"
   ["2"]="  ____   \n |___ \  \n   __) | \n  / __/  \n |_____| \n"
   ["3"]="  _____  \n |___ /  \n   |_ \  \n  ___) | \n |____/  \n"
   ["4"]="  _  _   \n | || |  \n | || |_ \n |__   _|\n    |_|  \n"
-  ["5"]="  _____ \n | ____|\n | |__  \n |___ \ \n  ___) |\n"
-  ["6"]="   ____  \n  / __ \ \n | / _ |\n | \__, |\n  \____/ \n"
+  ["5"]="  _____ \n | ____| \n |___ \  \n ___) | \n |____/ \n"
+  ["6"]="  __    \n  / /_   \n | '_ \ \n  | (_) |\n   \___/  \n"
   ["7"]=" ______  \n|____  | \n    / /  \n   / /   \n  /_/    \n"
-  ["8"]="  ____  \n / __ \ \n| /  \ |\n| \__/ |\n \____/ \n"
-  ["9"]="  ____  \n / __ \ \n| /  \|\n| \__/ |\n \____/ \n"
-  ["."]="    \n    \n  ---  \n  (   )\n ___  \n"
+  ["8"]="   ___   \n ( _ )  \n/ _ \  \n| (_) | \n  \___/  \n"
+  ["9"]=" ___   \n / _ \  \n| (_) | \n\__, | \n /_/ \n"
+  ["."]="    \n    \n     \n_   \n (_)  \n"
+  ["-"]="    \n    \n_____ \n|_____|\n  \n"
+  ["v"]="    \n  __   __\n\ \ / /\n\ V / \n \_/  \n"
+
+
 )
 
 convert_text() {
@@ -24,15 +28,19 @@ convert_text() {
   for ((i = 0; i < length; i++)); do
     local char="${input_text:i:1}"
     local converted="${characters[$char]}"
+    if [ -z "$converted"  ];
+    then
+      # echo "存在不正确的字符"
+      exit 1
+    fi
     converted_array+=("$converted")
   done
 
-  pp=("" "" "" "" "")
+  pp=()
   for ((f = 0; f < ${#converted_array[@]}; f++)); do
     local now_f=${converted_array[$f]}
 
     IFS="$(printf 'n')" read -d '' -ra lines <<<"$now_f"
-    #for ((l = 0; l < ${#lines[@]}; l++)); do
     l=0
     for line in "${lines[@]}"; do
 
@@ -44,11 +52,9 @@ convert_text() {
     done
 
   done
-  echo "${pp[0]}"
-  echo "${pp[1]}"
-  echo "${pp[2]}"
-  echo "${pp[3]}"
-  echo "${pp[4]}"
+   for ((p = 0; p < 5; p++)); do
+    echo  "${pp[$p]}"
+  done
 
 }
 
