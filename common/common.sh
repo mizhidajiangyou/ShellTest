@@ -50,7 +50,7 @@ function configParser() {
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
       find_section=true
-    elif [[ ${find_section} == true && (${line} == \[* || ${line} == \#* || -z ${line}) ]]; then
+    elif [[ ${find_section} == true && (${line} == \[* ) ]]; then
       sendLog "key: ${needed_key} in section: [${section}] not find" &>/dev/null
       echo ""
       break
