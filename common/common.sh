@@ -45,12 +45,14 @@ function configParser() {
   local config_file="${3}"
   # values
   local new_values="${4:-}"
+  # check file
+  config_file=$(check_cfg_file "$config_file")
   find_section=false
   line_number=1
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
       find_section=true
-    elif [[ ${find_section} == true && (${line} == \[* ) ]]; then
+    elif [[ ${find_section} == true && (${line} == \[*) ]]; then
       sendLog "key: ${needed_key} in section: [${section}] not find" &>/dev/null
       echo ""
       break
@@ -63,7 +65,7 @@ function configParser() {
         if [[ ! ${new_values} ]]; then
           echo "${val}"
           uppercase_string=$(echo "${section}_${needed_key}" | tr '[:lower:]' '[:upper:]')
-          eval export "${uppercase_string}"="${val}"
+          eval export "${uppercase_string}"="$(trim "${val}")"
         else
           if [[ -z ${val} ]]; then
             sendLog "old value is empty, adding new value: ${new_values}"
@@ -83,6 +85,10 @@ function configParser() {
 # 读取配置文件
 function readConfig() {
   local config_file="$1"
+  local val=""
+  local varname=""
+  local section=""
+
   # 读取 cfg 文件的内容
   while read -r line; do
     # 忽略注释和空行
@@ -95,7 +101,7 @@ function readConfig() {
       section=${BASH_REMATCH[1]}
     elif [[ "${line}" =~ ^([a-zA-Z0-9_-]+)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
       varname=${BASH_REMATCH[1]}
-      value=${BASH_REMATCH[2]}
+      val=${BASH_REMATCH[2]}
       # 将变量名转换为大写，并添加 section 前缀
       varname="$(echo "${section}_${varname}" | tr '[:lower:]' '[:upper:]')"
       # 检查变量名是否已经存在
@@ -104,7 +110,7 @@ function readConfig() {
         # exit 1
       fi
       # 导出变量
-      eval export "${varname}"="${value}"
+      eval export "${varname}"="$(trim "${val}")"
     fi
   done <"${config_file}"
 }
@@ -208,6 +214,35 @@ function checkVal() {
   return 0
 }
 
+# 寻找文件是否存在，会根据目录层级往前追述5层
+function check_cfg_file() {
+  # 定义要查找的文件名
+  local filename="$1"
+
+  # 定义要向前查找的层数
+  local layers=3
+
+  # 获取当前目录
+  # shellcheck disable=SC2155
+  local current_dir=$(pwd)
+
+  # 逐层向前查找文件
+  for ((i = 0; i <= layers; i++)); do
+    # 检查当前目录是否存在指定文件
+    if [ -f "$current_dir/$filename" ]; then
+      sendLog "匹配到文件： $current_dir/$filename" &>/dev/null
+      echo "$current_dir/$filename"
+      return 0
+    else
+      # 切换到上一级目录
+      current_dir=$(dirname "$current_dir")
+    fi
+  done
+
+  sendLog "未找到文件 $filename"
+  return 1
+}
+
 # 锁操作
 function zLock() {
   local lock_name="$1"
@@ -248,12 +283,11 @@ function zLock() {
 }
 
 function wait_lock() {
-  local  lock_name=$1
-  local  counter=1
-  local  num=12
-  local  time=10
-  while [ $counter -le $num ]
-  do
+  local lock_name=$1
+  local counter=1
+  local num=12
+  local time=10
+  while [ $counter -le $num ]; do
     if [ -f "$lock_name" ]; then
       sleep $time
       counter=$((counter + 1))
@@ -343,7 +377,7 @@ function sendLog() {
 
 # 钉钉通知
 function dingDing() {
-  local mes=( "$@" )
+  local mes=("$@")
   DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
   curl "$DingUrl" \
     -H 'Content-Type: application/json' \
@@ -352,7 +386,7 @@ function dingDing() {
 }
 
 function dingDingMark() {
-  local mes=( "$@" )
+  local mes=("$@")
   DingUrl="${DINGDING_URL}${DINGDING_TOKEN}"
   curl "$DingUrl" \
     -H 'Content-Type: application/json' \
