@@ -47,8 +47,8 @@ function configParser() {
   local new_values="${4:-}"
   # check file
   config_file=$(check_cfg_file "$config_file")
-  find_section=false
-  line_number=1
+  local find_section=false
+  local line_number=1
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
       find_section=true
@@ -218,7 +218,12 @@ function checkVal() {
 function check_cfg_file() {
   # 定义要查找的文件名
   local filename="$1"
-
+  # 判断是否为绝对路径
+  if [[ $filename == /* ]]; then
+    sendLog "文件： $filename 为据对路径，不进行查找。 " &>/dev/null
+    echo "$filename"
+    return 0
+  fi
   # 定义要向前查找的层数
   local layers=3
 
@@ -234,6 +239,7 @@ function check_cfg_file() {
       echo "$current_dir/$filename"
       return 0
     else
+      sendLog "匹配文件：  $current_dir/$filename 失败，将在上一层目录中寻找" 2 &>/dev/null
       # 切换到上一级目录
       current_dir=$(dirname "$current_dir")
     fi
