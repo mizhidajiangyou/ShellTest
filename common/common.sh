@@ -17,12 +17,14 @@ function usage() {
 # 小写
 function toLower() {
   local str="$1"
+  sendLog "$str 进行了转小写处理" 0 &> /dev/null
   echo "$str" | tr '[:upper:]' '[:lower:]'
 }
 
 # 大写
 function toUpper() {
   local str="$1"
+  sendLog "$str 进行了转大写处理" 0 &> /dev/null
   echo "$str" | tr '[:lower:]' '[:upper:]'
 }
 
@@ -433,8 +435,21 @@ function wLock() {
   flock -u 9
 }
 
+### 环境 ###
+# 检测命令是否可用
+function checkCommand() {
+  local com="$1"
+  if ! command -v "$com" &>/dev/null; then
+    sendLog "检测命令$com 不可用。 " 3 &>/dev/null
+    return 1
+  else
+    sendLog "检测命令$com 可用。 " 0 &>/dev/null
+    return 0
+  fi
+}
+
 # 主函数
-function main() {
+function _main() {
   local cfg_name="global.cfg"
   # 文件不存在则创建
   if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
@@ -466,4 +481,4 @@ function main() {
   checkFile "${LOG_FILE}" "force"
 }
 
-main
+_main
