@@ -1,6 +1,7 @@
 #!/bin/bash
+#用于输出艺术字
+# e.g. convert_text v0.0.1-release1
 
-# 数字和符号的映射关系
 declare -A characters
 characters=(
   ["0"]="____  \n/ __ \ \n| |  | |\n| |__| |\n\____/ \n"
@@ -75,5 +76,5 @@ convert_text() {
 
 }
 
-input_text="$1"
-convert_text "$input_text"
+#input_text="$1"
+#convert_text "$input_text"
