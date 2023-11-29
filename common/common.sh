@@ -1,5 +1,7 @@
 #!/bin/bash
 # 存放公共方法
+#shellcheck disable=SC1090
+source "${SHELL_HOME}"common/font.sh
 
 # 使用方法函数
 function usage() {
@@ -48,7 +50,7 @@ function configParser() {
   # values
   local new_values="${4:-}"
   # check file
-  config_file=$(check_cfg_file "$config_file")
+  config_file=$(checkCfgFile "$config_file")
   local find_section=false
   local line_number=1
   while read -r line; do
@@ -217,7 +219,7 @@ function checkVal() {
 }
 
 # 寻找文件是否存在，会根据目录层级往前追述5层
-function check_cfg_file() {
+function checkCfgFile() {
   # 定义要查找的文件名
   local filename="$1"
   # 判断是否为绝对路径
@@ -290,7 +292,7 @@ function zLock() {
   esac
 }
 
-function wait_lock() {
+function waitLock() {
   local lock_name=$1
   local counter=1
   local num=12
@@ -433,6 +435,82 @@ function wLock() {
 
   # 释放锁
   flock -u 9
+}
+
+### 发里服少
+# 百分比进度
+function progressBar() {
+  # 进度
+  local J_NOW=0
+  # 总进度
+  local J_ALL=100
+  # 定义数组长度
+  local J_NUM=$1
+  if [[ ! $J_NUM =~ ^[0-9]+$ ]]; then
+    sendLog "progress_bar 入参错误，非整数！" 3 &> /dev/null
+    return 1
+  fi
+  J_NUM_N=$J_NUM
+  # 定义单次增长进度数
+ while [ "$J_NUM_N" -ne 0 ];do
+  J_ADD=$((J_ALL / J_NUM))
+  J_NOW=$((J_NOW + J_ADD))
+  if [ $((J_ALL - J_ADD)) -le $J_NOW ]; then
+    echo "[$J_ALL%|$J_ALL%] $2"
+  else
+    printf "[%s|$J_ALL%%] %s\n\033[1A" $J_NOW "$2"
+    sleep 1
+  fi
+  J_NUM_N=$((J_NUM_N - 1))
+  done
+}
+
+# 数字倒计时
+function countdown() {
+  local limit=$1
+  if [[ ! $limit =~ ^[0-9]+$ ]]; then
+    return 1
+  fi
+  # 移动光标到上方 5 行
+  local move_cursor_up="\033[5A"
+  # 清除光标位置之上的所有内容
+  local clear_above_cursor="\033[J"
+  while [ "$limit" -ne 0 ]; do
+    convert_text "$limit"
+
+    sleep 1
+    # 移动
+    echo -ne "$move_cursor_up"
+    # 清除
+    echo -ne "$clear_above_cursor"
+
+    limit=$((limit - 1))
+  done
+}
+
+# 数字正数
+function countIt() {
+  local count=1
+  local limit=$1
+  if [[ ! $limit =~ ^[0-9]+$ ]]; then
+    return 1
+  fi
+  # 移动光标到上方 5 行
+  local move_cursor_up="\033[5A"
+  # 清除光标位置之上的所有内容
+  local clear_above_cursor="\033[J"
+
+  while [ $count -le "$limit" ]; do
+    convert_text $count
+
+    sleep 1
+    # 移动
+    echo -ne "$move_cursor_up"
+    # 清除
+    echo -ne "$clear_above_cursor"
+
+    count=$((count + 1))
+  done
 }
 
 ### 环境 ###
