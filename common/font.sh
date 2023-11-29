@@ -25,7 +25,7 @@ characters=(
   ["b"]="_     \n| |__  \n| '_ \ \n| |_) |\n|_.__/ \n"
   ["t"]="_     \n| |_   \n| __|  \n| |_   \n \__|  \n"
   ["x"]="\n__  __ \n\ \/ / \n >  <  \n/_/\_\ \n"
-  ["m"]="\n _ __ ___ \n| '_ \` _ \ \n| | | | | |\n|_| |_| |_|\n"
+  ["m"]="\n_ __ ___  \n| '_ \` _ \ \n| | | | | |\n|_| |_| |_|\n"
 
 )
 
@@ -47,10 +47,13 @@ convert_text() {
   pp=()
   for ((f = 0; f < ${#converted_array[@]}; f++)); do
     local now_f=${converted_array[$f]}
-    local is_dot=false
+    local is_short=false
+    local is_long=false
     # 如果是.，则输出时间隔短一点
     if [ "${now_f}" == "${characters[.]}" ]; then
-      is_dot=true
+      is_short=true
+    elif [ "${now_f}" == "${characters[m]}" ]; then
+      is_long=true
     fi
 
     IFS="$(printf 'n')" read -d '' -ra lines <<<"$now_f"
@@ -60,8 +63,10 @@ convert_text() {
       if [ $((l + 1)) -ne ${#lines[@]} ]; then
         line=${line:0:-1}
       fi
-      if $is_dot; then
+      if $is_short; then
         pp[$l]=$(printf "%s%5s" "${pp[$l]}" "${line}")
+      elif $is_long; then
+        pp[$l]=$(printf "%s%13s" "${pp[$l]}" "${line}")
       else
         pp[$l]=$(printf "%s%9s" "${pp[$l]}" "${line}")
       fi
