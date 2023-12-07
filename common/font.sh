@@ -29,10 +29,14 @@ characters=(
 
 )
 
-convert_text() {
+function convert_text() {
   local input_text=$1
   local length=${#input_text}
   local converted_array=()
+  local color=$2
+  if [ -z "${color}" ]; then
+    color='\033[0m'
+  fi
 
   for ((i = 0; i < length; i++)); do
     local char="${input_text:i:1}"
@@ -75,8 +79,15 @@ convert_text() {
     done
 
   done
+
   for ((p = 0; p < 5; p++)); do
-    echo "${pp[$p]}"
+    if [ "$p" -eq 0 ]; then
+      echo -e "${color}${pp[$p]}"
+    elif [ "$p" -eq 4 ]; then
+      echo -e "${pp[$p]}\033[0m"
+    else
+      echo "${pp[$p]}"
+    fi
   done
 
 }

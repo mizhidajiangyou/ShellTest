@@ -19,14 +19,14 @@ function usage() {
 # 小写
 function toLower() {
   local str="$1"
-  sendLog "$str 进行了转小写处理" 0 &> /dev/null
+  sendLog "$str 进行了转小写处理" 0 &>/dev/null
   echo "$str" | tr '[:upper:]' '[:lower:]'
 }
 
 # 大写
 function toUpper() {
   local str="$1"
-  sendLog "$str 进行了转大写处理" 0 &> /dev/null
+  sendLog "$str 进行了转大写处理" 0 &>/dev/null
   echo "$str" | tr '[:lower:]' '[:upper:]'
 }
 
@@ -447,70 +447,86 @@ function progressBar() {
   # 定义数组长度
   local J_NUM=$1
   if [[ ! $J_NUM =~ ^[0-9]+$ ]]; then
-    sendLog "progress_bar 入参错误，非整数！" 3 &> /dev/null
+    sendLog "progress_bar 入参错误，非整数！" 3 &>/dev/null
     return 1
   fi
   J_NUM_N=$J_NUM
   # 定义单次增长进度数
- while [ "$J_NUM_N" -ne 0 ];do
-  J_ADD=$((J_ALL / J_NUM))
-  J_NOW=$((J_NOW + J_ADD))
-  if [ $((J_ALL - J_ADD)) -le $J_NOW ]; then
-    echo "[$J_ALL%|$J_ALL%] $2"
-  else
-    printf "[%s|$J_ALL%%] %s\n\033[1A" $J_NOW "$2"
-    sleep 1
-  fi
-  J_NUM_N=$((J_NUM_N - 1))
+  while [ "$J_NUM_N" -ne 0 ]; do
+    J_ADD=$((J_ALL / J_NUM))
+    J_NOW=$((J_NOW + J_ADD))
+    if [ $((J_ALL - J_ADD)) -le $J_NOW ]; then
+      echo "[$J_ALL%|$J_ALL%] $2"
+    else
+      printf "[%s|$J_ALL%%] %s\n\033[1A" $J_NOW "$2"
+      sleep 1
+    fi
+    J_NUM_N=$((J_NUM_N - 1))
   done
 }
 
 # 数字倒计时
 function countdown() {
   local limit=$1
+  local max=$1
+  local color='\033[0;32m'
   if [[ ! $limit =~ ^[0-9]+$ ]]; then
     return 1
   fi
-  # 移动光标到上方 5 行
-  local move_cursor_up="\033[5A"
-  # 清除光标位置之上的所有内容
-  local clear_above_cursor="\033[J"
   while [ "$limit" -ne 0 ]; do
-    convert_text "$limit"
-
-    sleep 1
-    # 移动
-    echo -ne "$move_cursor_up"
-    # 清除
-    echo -ne "$clear_above_cursor"
-
+    if [ "$limit" -eq $((2 * max / 3)) ]; then
+      color="\033[0;34m"
+    elif [ "$limit" -eq $((max / 3)) ]; then
+      color="\033[0;31m"
+    fi
+    zAsi "$limit" "$color"
     limit=$((limit - 1))
   done
 }
 
 # 数字正数
 function countIt() {
+  # 正常不需要颜色
   local count=1
   local limit=$1
+  # local max=$1
+  # local color='\033[0;32m'
   if [[ ! $limit =~ ^[0-9]+$ ]]; then
     return 1
+  fi
+
+  while [ $count -le "$limit" ]; do
+    #    if [ "$count" -eq $((2 * max / 3)) ]; then
+    #      color="\033[0;31m"
+    #    elif [ "$count" -eq $((max / 3)) ]; then
+    #      color="\033[0;34m"
+    #    fi
+    #    zAsi $count "$color"
+    zAsi $count
+    count=$((count + 1))
+  done
+}
+
+# 输出字后清空
+function zAsi() {
+  local out=$1
+  local color="$2"
+  if [ -z "${color}" ]; then
+    color='\033[0m'
   fi
   # 移动光标到上方 5 行
   local move_cursor_up="\033[5A"
   # 清除光标位置之上的所有内容
   local clear_above_cursor="\033[J"
 
-  while [ $count -le "$limit" ]; do
-    convert_text $count
+  convert_text "$out" "$color"
 
-    sleep 1
-    # 移动
-    echo -ne "$move_cursor_up"
-    # 清除
-    echo -ne "$clear_above_cursor"
+  sleep 1
+  # 移动
+  echo -ne "$move_cursor_up"
+  # 清除
+  echo -ne "$clear_above_cursor"
 
-    count=$((count + 1))
-  done
 }
 
 ### 环境 ###
