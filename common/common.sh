@@ -353,6 +353,7 @@ function urandomStr() {
 # 通用日志管理
 function sendLog() {
   local LEVEL="INFO - "
+  local COLOR=$3
   case $2 in
   0)
     if [ "${LOG_LEVEL}" == "debug" ]; then
@@ -369,19 +370,26 @@ function sendLog() {
     ;;
   3)
     LEVEL="ERROR - "
+    if [ -z "$COLOR" ]; then
+      COLOR="r"
+    fi
     ;;
   4)
     LEVEL="CRITICAL - "
     LOG_CONSOLE_PRINT="true"
+    if [ -z $COLOR ]; then
+      COLOR="rg"
+    fi
     ;;
   *)
     LEVEL="INFO - "
     ;;
   esac
+  COLOR=$(enter_color "$COLOR")
   printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1" >>"${LOG_FILE}"
 
   if ${LOG_CONSOLE_PRINT}; then
-    printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1"
+    printf "$COLOR%-25s%s${Z_COLOR_COLLECTION[none]}\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1"
   fi
 }
 
@@ -469,15 +477,15 @@ function progressBar() {
 function countdown() {
   local limit=$1
   local max=$1
-  local color='\033[0;32m'
+  local color="${Z_COLOR_COLLECTION[green]}"
   if [[ ! $limit =~ ^[0-9]+$ ]]; then
     return 1
   fi
   while [ "$limit" -ne 0 ]; do
     if [ "$limit" -eq $((2 * max / 3)) ]; then
-      color="\033[0;34m"
+      color="${Z_COLOR_COLLECTION[blue]}"
     elif [ "$limit" -eq $((max / 3)) ]; then
-      color="\033[0;31m"
+      color="${Z_COLOR_COLLECTION[red]}"
     fi
     zAsi "$limit" "$color"
     limit=$((limit - 1))
