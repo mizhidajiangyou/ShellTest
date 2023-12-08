@@ -1,7 +1,4 @@
-#!/bin/bash
 # 存放公共方法
-#shellcheck disable=SC1090
-source "${SHELL_HOME}"common/font.sh
 
 # 使用方法函数
 function usage() {
@@ -563,12 +560,45 @@ function check_available() {
   fi
 }
 
+function check_bash() {
+  read -r shebang <"$0"
+  interpreter="${shebang#!*bin/}"
+  interpreter="${interpreter%% *}"
+  if [ -z "$interpreter" ]; then
+    if [[ "${SHELL##*/}" == *zsh* ]]; then
+      echo "不支持zsh，请修改shebang行指定默认解释器为bash。1"
+      exit 1
+    fi
+    interpreter=$SHELL
+  else
+    if [[ "${interpreter##*/}" == *zsh* ]]; then
+      echo "不支持zsh，请修改shebang行指定默认解释器为bash。2"
+      exit 2
+    fi
+    interpreter=${interpreter#*!}
+  fi
+  min_version='4.0.0'
+  now_version=$($interpreter --version | head -n 1 | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+")
+  small_version=$(echo -e "$now_version\n$min_version" | sort -V | head -n 1)
+  if [ "${small_version}" != "$min_version" ]; then
+    echo "当前使用的默认解释器为:${interpreter}版本为$now_version,低于最低bash版本要求。"
+    exit 1
+  fi
+}
+
 # 主函数
 function _main() {
+  check_bash
+  if [ -z "${SHELL_HOME}" ]; then
+    echo "请先配置变量SHELL_HOME。"
+    exit 1
+  fi
+  #shellcheck disable=SC1090
+  source "${SHELL_HOME}"common/font.sh
   local cfg_name="global.cfg"
   # 文件不存在则创建
   if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
-    pRed "No file ${cfg_name} in ${SHELL_HOME},init it now !"
+    print_color "No file ${cfg_name} in ${SHELL_HOME},init it now !" r
     sleep 3
     {
       # shellcheck disable=SC2016
@@ -593,7 +623,7 @@ function _main() {
   # 配置文件名称
   readConfig "${SHELL_HOME}${cfg_name}"
   # 确保日志文件存在
-  checkFile "${LOG_FILE}" "force" &> /dev/null
+  checkFile "${LOG_FILE}" "force" &>/dev/null
 }
 
 _main

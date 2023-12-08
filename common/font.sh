@@ -1,4 +1,3 @@
-#!/bin/bash
 #用于输出艺术字
 # e.g. convert_text v0.0.1-release1
 
