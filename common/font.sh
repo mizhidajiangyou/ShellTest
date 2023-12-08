@@ -77,11 +77,7 @@ function convert_text() {
   local input_text=$1
   local length=${#input_text}
   local converted_array=()
-  local color=$2
-  if [ -z "${color}" ]; then
-    color="${Z_COLOR_COLLECTION[none]}"
-  fi
-
+  local color=${2:-${Z_COLOR_COLLECTION[none]}}
   for ((i = 0; i < length; i++)); do
     local char="${input_text:i:1}"
     local converted="${Z_ASCII_COLLECTION[$char]}"
@@ -138,16 +134,8 @@ function convert_text() {
 
 # 颜色输出
 function enter_color() {
-  local color=$1
-  local now_color
-  if [ -z "$color" ]; then
-    now_color="${Z_COLOR_COLLECTION[none]}"
-  else
-     now_color="${Z_COLOR_COLLECTION[$color]}"
-    if [ -z "$now_color" ]; then
-      now_color="${Z_COLOR_COLLECTION[none]}"
-    fi
-  fi
+  local color=${1:-n}
+  local now_color=${Z_COLOR_COLLECTION[$color]:-${Z_COLOR_COLLECTION[none]}}
   echo "$now_color"
 }
 

@@ -370,16 +370,12 @@ function sendLog() {
     ;;
   3)
     LEVEL="ERROR - "
-    if [ -z "$COLOR" ]; then
-      COLOR="r"
-    fi
+    COLOR=${COLOR:-r}
     ;;
   4)
     LEVEL="CRITICAL - "
     LOG_CONSOLE_PRINT="true"
-    if [ -z $COLOR ]; then
-      COLOR="rg"
-    fi
+    COLOR=${COLOR:-rg}
     ;;
   *)
     LEVEL="INFO - "
@@ -418,12 +414,6 @@ function useDing() {
     dingDing "$1"
     exit 1
   fi
-}
-
-### 打印 ###
-# 红色
-function pRed() {
-  printf "\033[0;31m%s\033[0m\n" "$1"
 }
 
 ### 装饰器 ###
@@ -550,6 +540,29 @@ function checkCommand() {
   fi
 }
 
+# 检测环境容量
+function check_available() {
+
+  # 目录最小容量
+  local min=${1:-100}
+
+  # 需要判断的目录
+  local check_dir=${2:-/}
+
+  # 获取根目录的可用容量
+  available_space=$(df -h --output=avail "$check_dir" | tail -n 1)
+
+  # 提取数字部分
+  available_space_gb=$(echo "$available_space" | awk '{gsub("G","") ;print $1}')
+
+  # 检查容量是否小于100G
+  if ((available_space_gb < min)); then
+    sendLog "失败：$check_dir 目录可用容量低于 $min G。当前可用容量为 $available_space_gb GB" 3
+  else
+    sendLog "成功：$check_dir 目录可用容量为 $available_space_gb GB" 1 g
+  fi
+}
+
 # 主函数
 function _main() {
   local cfg_name="global.cfg"
@@ -580,7 +593,7 @@ function _main() {
   # 配置文件名称
   readConfig "${SHELL_HOME}${cfg_name}"
   # 确保日志文件存在
-  checkFile "${LOG_FILE}" "force"
+  checkFile "${LOG_FILE}" "force" &> /dev/null
 }
 
 _main
