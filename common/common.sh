@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # 存放公共方法
 
 # 使用方法函数
@@ -566,16 +567,16 @@ function check_bash() {
   interpreter="${interpreter%% *}"
   if [ -z "$interpreter" ]; then
     if [[ "${SHELL##*/}" == *zsh* ]]; then
-      echo "不支持zsh，请修改shebang行指定默认解释器为bash。1"
+      echo "不支持zsh，请修改shebang行指定默认解释器为bash。"
       exit 1
     fi
     interpreter=$SHELL
   else
     if [[ "${interpreter##*/}" == *zsh* ]]; then
-      echo "不支持zsh，请修改shebang行指定默认解释器为bash。2"
+      echo "不支持zsh，请修改shebang行指定默认解释器为bash。"
       exit 2
     fi
-    interpreter=${interpreter#*!}
+    interpreter=${shebang#*!}
   fi
   min_version='4.0.0'
   now_version=$($interpreter --version | head -n 1 | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+")
