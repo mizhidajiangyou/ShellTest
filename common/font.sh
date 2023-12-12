@@ -2,7 +2,8 @@
 #用于输出艺术字
 # e.g. convert_text v0.0.1-release1
 
-declare -A Z_ASCII_COLLECTION Z_COLOR_COLLECTION
+
+declare -Ag Z_ASCII_COLLECTION Z_COLOR_COLLECTION
 Z_ASCII_COLLECTION=(
   ["0"]="____  \n/ __ \ \n| |  | |\n| |__| |\n\____/ \n"
   ["1"]="__   \n/_ |  \n| |  \n  | |  \n  |_|  \n"
@@ -72,79 +73,6 @@ Z_COLOR_COLLECTION=(
   ["n"]="\033[0m"
 )
 
-# ASCII 字符输出
-function convert_text() {
-  local input_text=$1
-  local length=${#input_text}
-  local converted_array=()
-  local color=${2:-${Z_COLOR_COLLECTION[none]}}
-  for ((i = 0; i < length; i++)); do
-    local char="${input_text:i:1}"
-    local converted="${Z_ASCII_COLLECTION[$char]}"
-    if [ -z "$converted" ]; then
-      # echo "存在不正确的字符"
-      exit 1
-    fi
-    converted_array+=("$converted")
-  done
+echo "${Z_ASCII_COLLECTION[*]}" &> /dev/null
+echo "${Z_COLOR_COLLECTION[*]}" &> /dev/null
 
-  pp=()
-  for ((f = 0; f < ${#converted_array[@]}; f++)); do
-    local now_f=${converted_array[$f]}
-    local is_short=false
-    local is_long=false
-    # 如果是.，则输出时间隔短一点
-    if [ "${now_f}" == "${Z_ASCII_COLLECTION[.]}" ]; then
-      is_short=true
-    elif [ "${now_f}" == "${Z_ASCII_COLLECTION[m]}" ]; then
-      is_long=true
-    fi
-
-    IFS="$(printf 'n')" read -d '' -ra lines <<<"$now_f"
-    l=0
-    for line in "${lines[@]}"; do
-
-      if [ $((l + 1)) -ne ${#lines[@]} ]; then
-        line=${line:0:-1}
-      fi
-      if $is_short; then
-        pp[$l]=$(printf "%s%5s" "${pp[$l]}" "${line}")
-      elif $is_long; then
-        pp[$l]=$(printf "%s%13s" "${pp[$l]}" "${line}")
-      else
-        pp[$l]=$(printf "%s%9s" "${pp[$l]}" "${line}")
-      fi
-
-      l=$((l + 1))
-    done
-
-  done
-
-  for ((p = 0; p < 5; p++)); do
-    if [ "$p" -eq 0 ]; then
-      echo -e "${color}${pp[$p]}"
-    elif [ "$p" -eq 4 ]; then
-      echo -e "${pp[$p]}${Z_COLOR_COLLECTION[none]}"
-    else
-      echo "${pp[$p]}"
-    fi
-  done
-
-}
-
-# 颜色输出
-function enter_color() {
-  local color=${1:-n}
-  local now_color=${Z_COLOR_COLLECTION[$color]:-${Z_COLOR_COLLECTION[none]}}
-  echo "$now_color"
-}
-
-function print_color() {
-  local mes=$1
-  local color=$2
-  color=$(enter_color "$color")
-  printf "${Z_COLOR_COLLECTION[$color]}%s${Z_COLOR_COLLECTION[none]}\n" "$mes"
-}
-
-#input_text="$1"
-#convert_text "$input_text"
