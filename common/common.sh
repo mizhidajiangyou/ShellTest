@@ -45,17 +45,17 @@ function source_all_base_function() {
     echo "请先配置变量SHELL_HOME。"
     exit 1
   fi
-  cd "${SHELL_HOME}" || exit 127
-  source common/font.sh
-  source common/print.sh
-  source common/check.sh
-  source common/configuration.sh
-  source common/decorator.sh
-  source common/file.sh
-  source common/logger.sh
-  source common/notice.sh
-  source common/string.sh
-  source common/urandom.sh
+  cd "${SHELL_HOME}"common/base || exit 127
+  source font.sh
+  source print.sh
+  source check.sh
+  source configuration.sh
+  source decorator.sh
+  source file.sh
+  source logger.sh
+  source notice.sh
+  source string.sh
+  source urandom.sh
   cd - || exit 127
 }
 

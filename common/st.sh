@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # standard
 
 # 是否符合正则
@@ -76,4 +77,28 @@ $2" "$3"
 
 function delete_line() {
   sed "$SED_OPTION" "$1d" "$3"
+}
+
+function print_string_by_some() {
+  # 输入字符串
+  input_string="$1"
+
+  # 使用字符串操作分割字符串
+  IFS='.' read -ra parts <<<"$input_string"
+
+  # 初始化左边的字符串为空，右边的字符串为最后一个部分
+  left_part=""
+  right_part=${parts[${#parts[@]} - 1]}
+
+  # 从最后一个部分开始向前遍历，将每个部分添加到左边的字符串中
+  for ((i = ${#parts[@]} - 2; i >= 0; i--)); do
+    left_part="${parts[i]}.$left_part"
+  done
+
+  # 去除最后一个点号
+  left_part=${left_part%?}
+
+  # 输出左边的字符和右边的字符
+  echo "左边的字符：$left_part"
+  echo "右边的字符：$right_part"
 }

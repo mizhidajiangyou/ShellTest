@@ -73,7 +73,7 @@ function print_color() {
   local mes=$1
   local color=$2
   color=$(enter_color "$color")
-  printf "${Z_COLOR_COLLECTION[$color]}%s${Z_COLOR_COLLECTION[none]}\n" "$mes"
+  printf "${color}%s${Z_COLOR_COLLECTION[none]}\n" "$mes"
 }
 
 ### 发里服少
