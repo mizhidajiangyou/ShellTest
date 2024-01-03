@@ -16,6 +16,12 @@ function configParser() {
   config_file=$(checkCfgFile "$config_file")
   local find_section=false
   local line_number=1
+  # 最后一行不为空会影响读取
+  local last_line
+  last_line=$(tail -n 1 "$config_file")
+  if [[ -n "$last_line" ]]; then
+      echo >> "$config_file"
+  fi
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
       find_section=true
