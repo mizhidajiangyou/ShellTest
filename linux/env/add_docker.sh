@@ -108,7 +108,7 @@ EOF
 
 }
 
-function _main() {
+function main() {
   # shellcheck disable=SC1090
   source "${SHELL_HOME}"common/common.sh
 
@@ -135,4 +135,4 @@ function _main() {
 
 }
 
-_main
+main
