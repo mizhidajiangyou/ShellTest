@@ -11,7 +11,7 @@ function make_common_file() {
     file_data=$(grep -v '#!/usr/bin/env bash' "${SHELL_HOME}"common/base/"${ba}")
     echo "$file_data" >>"$common_build_file"
   done
-  grep -Ev "source [a-zA-Z0-9]+\.sh" "${SHELL_HOME}common/common.sh" | sed '/^\s*$/d' >>"$common_build_file"
+  grep -Ev "source [a-zA-Z0-9]+\.sh" "${SHELL_HOME}common/common.sh" | sed '/^\s*$/d' |grep -v 'common/base' |grep -v 'common/common.sh' >>"$common_build_file"
   # shellcheck disable=SC1090
   source "$common_build_file"
   print_color "make common file successful" g
@@ -30,6 +30,8 @@ function main() {
   fi
   {
     echo '#!/bin/bash'
+    # shellcheck disable=SC2016
+    echo 'SHELL_HOME="$(pwd)/"'
     cat "${common_build_file}"
     # shellcheck disable=SC2016
     cat <"${file_name}" | grep -v 'source ${SHELL_HOME}common/common.sh' | grep -v '#!/usr/bin/env bash'

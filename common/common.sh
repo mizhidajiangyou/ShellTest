@@ -45,7 +45,7 @@ function source_all_base_function() {
     echo "请先配置变量SHELL_HOME。"
     exit 1
   fi
-  cd "${SHELL_HOME}"common/base || exit 127
+  cd "${SHELL_HOME}"common/base || return 1
   source font.sh
   source print.sh
   source check.sh
@@ -56,7 +56,7 @@ function source_all_base_function() {
   source notice.sh
   source string.sh
   source urandom.sh
-  cd - || exit 127
+  cd - || return 1
 }
 
 # 主函数

@@ -22,8 +22,11 @@ function get_docker_pkg() {
 }
 
 function start_docker_service() {
-  # shellcheck disable=SC2016
-  cat >/lib/systemd/system/docker.service <<EOF
+  if [ -f /lib/systemd/system/docker.service ]; then
+    echo '存在文件/lib/systemd/system/docker.service 不进行文件生成。'
+  else
+    # shellcheck disable=SC2016
+    cat >/lib/systemd/system/docker.service <<EOF
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
@@ -71,6 +74,7 @@ OOMScoreAdjust=-500
 [Install]
 WantedBy=multi-user.target
 EOF
+  fi
   # shellcheck disable=SC2162
   read -p "是否生成docker默认配置项？ y/n " docker_config_enable
   if [ "${docker_config_enable}" == "y" ]; then
@@ -115,14 +119,16 @@ function main() {
   local base_url="https://mirrors.aliyun.com/docker-ce/"
   local path_url="/linux/static/stable/"
   local framework_name="x86_64/"
-  local docker_package_name
+  docker_package_name
   if [[ ! $(uname -m) =~ "x86" ]]; then
-    framework_name=aarch64/
+    framework_name='aarch64/'
   fi
   local docker_url="$base_url$path_url$framework_name"
-  read -pr "是否使用本地包安装?y/n" user_local_pkg
+  # shellcheck disable=SC2162
+  read -p "是否使用本地包安装?y/n" user_local_pkg
   if [ "$user_local_pkg" == "y" ]; then
-    read -pr "请把包放在当前目录下，并输入docker包名称。" docker_package_name
+    # shellcheck disable=SC2162
+    read -p "请把包放在当前目录下，并输入docker包名称。" docker_package_name
     if [ ! -f "$docker_package_name" ]; then
       print_color "未找到输入的包名称！" r
       exit 1
