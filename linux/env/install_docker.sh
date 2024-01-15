@@ -103,7 +103,8 @@ function config_docker() {
   if [ ! -f /etc/docker/daemon.json ]; then
     cat >"/etc/docker/daemon.json" <<EOF
 {
-  "data-root": "$docker_data_root_path"
+  "data-root": "$docker_data_root_path",
+  "hosts": ["tcp://0.0.0.0:2375","unix:///var/run/docker.sock"]
 }
 EOF
   else

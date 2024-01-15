@@ -34,7 +34,10 @@ function intoPath() {
 function checkFile() {
   local file_name="${1}"
   local file_force="${2}"
-
+  if [ -z "${file_name}" ];then
+    sendLog "not give ${file_name}" 2
+    return 1
+  fi
   if [[ ! -f "${file_name}" ]]; then
     if [[ "${file_force}" == "force" ]]; then
       # shellcheck disable=SC2155

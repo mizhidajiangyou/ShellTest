@@ -40,11 +40,13 @@ function check_bash() {
 }
 
 function source_all_base_function() {
+  local now_path=$(pwd)
   # local fun_file=(check  configuration decorator file font logger notice string urandom)
   if [ -z "${SHELL_HOME}" ]; then
     echo "请先配置变量SHELL_HOME。"
     exit 1
   fi
+  # 不能用for导入，否则影响打包。
   cd "${SHELL_HOME}"common/base || return 1
   source font.sh
   source print.sh
@@ -56,7 +58,8 @@ function source_all_base_function() {
   source notice.sh
   source string.sh
   source urandom.sh
-  cd - || return 1
+  source communication.sh
+  cd "${now_path}" || return 1
 }
 
 # 主函数
@@ -68,30 +71,36 @@ function _main() {
   if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
     print_color "No file ${cfg_name} in ${SHELL_HOME},init it now !" r
     sleep 3
-    {
-      # shellcheck disable=SC2016
-      echo '# 全局配置
-             # 日志
-             [log]
-             level = debug
-             console_print = true
-             file = ${SHELL_HOME}res/log/shell.log
+    touch "${SHELL_HOME}${cfg_name}" || exit 1
+    cat >"${SHELL_HOME}${cfg_name}" <<EOF
+# 全局配置
+# 日志
+[log]
+level = debug
+console_print = true
+file = ${SHELL_HOME}res/log/shell.log
 
-             # 锁
-             [lock]
-             pre_name = ${SHELL_HOME}res/lock/.z_lock_
+# 锁
+[lock]
+pre_name = ${SHELL_HOME}res/lock/.z_lock_
 
-             [dingding]
-             # 是否@所有人
-             all = false
-             # 是否启用
-             use = true'
-    } >"${SHELL_HOME}${cfg_name}"
+# expect配置
+[expect]
+time_out = 3
+result_file = ${SHELL_HOME}res/log/expect.log
+
+[dingding]
+# 是否@所有人
+all = false
+# 是否启用
+use = true
+EOF
   fi
   # 配置文件名称
   readConfig "${SHELL_HOME}${cfg_name}"
   # 确保日志文件存在
   checkFile "${LOG_FILE}" "force" &>/dev/null
+  checkFile "${EXPECT_RESULT_FILE}" "force" &>/dev/null
 }
 
 _main

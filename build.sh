@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 该脚本用于打包项目
-# set -x
+#set -x
 
 # 将common.sh转换为一个sh脚本
 function make_common_file() {
@@ -34,7 +34,7 @@ function main() {
     echo 'SHELL_HOME="$(pwd)/"'
     cat "${common_build_file}"
     # shellcheck disable=SC2016
-    cat <"${file_name}" | grep -v 'source ${SHELL_HOME}common/common.sh' | grep -v '#!/usr/bin/env bash'
+    grep -v 'common/common.sh' "${file_name}" | grep -v '#!/usr/bin/env bash'
   } >"$build_result_file_name"
   # shellcheck disable=SC2181
   if [ $? -eq 0 ]; then
@@ -44,7 +44,7 @@ function main() {
   fi
   rm -rf "${common_build_file}"
   if checkCommand shc ;then
-    print_color "do encryption file,it will generate $1.x and $1.x.c"
+    print_color "do encryption file,it will generate $1.x and $1.x.c" b
     shc -r -f build_result.sh
   fi
 }
