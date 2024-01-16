@@ -21,3 +21,10 @@ function trim() {
   local trimmed=${trimmed## }
   echo "$trimmed"
 }
+
+# 根据逗号分割字符串
+function splitByComma() {
+    local array  string=$1
+    IFS=',' read -ra array <<< "$string"
+    echo "${array[*]}"
+}

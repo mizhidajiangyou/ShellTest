@@ -14,7 +14,7 @@ function checkCommand() {
 }
 
 # 检测环境容量
-function check_available() {
+function checkAvailable() {
 
   # 目录最小容量
   local min=${1:-100}
@@ -34,4 +34,50 @@ function check_available() {
   else
     sendLog "成功：$check_dir 目录可用容量为 $available_space_gb GB" 1 g
   fi
+}
+
+# 判断IP是否可用
+function checkIp() {
+  local ip_address=$1
+  if ping -c 1 -W 1 -s 1 "${ip_address}" &>/dev/null; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# 等待ip可用
+function waitIpReady() {
+  local ip_address=$1
+  local retries=0
+  while true; do
+    if checkIp "$ip_address"; then
+      sendLog "ping $ip_address 成功!" 0
+      break
+    else
+      retries=$((retries + 1))
+      sendLog "第 $retries 次 Ping ${ip_address}  失败" 0
+      if [ $retries -eq "${NETWORK_MAX_RETRY}" ]; then
+        sendLog "ping ${ip_address} 达到最大重试次数，退出循环" 2
+        # 错误情况下无法进行后续操作
+        exit 1
+        # break
+      fi
+    fi
+    sleep "${NETWORK_RETRY_DELAY}"
+
+  done
+
+}
+
+function checkSSHKey() {
+    local  key_file="$HOME/.ssh/id_rsa"
+
+    if [ ! -f "$key_file" ]; then
+        sendLog "Generating SSH key..."
+        ssh-keygen -t rsa -b 4096 -f "$key_file" -N ""
+        sendLog "SSH key generated."
+    else
+        sendLog "SSH key already exists." 0
+    fi
 }

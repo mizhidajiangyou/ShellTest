@@ -40,6 +40,7 @@ function check_bash() {
 }
 
 function source_all_base_function() {
+  # shellcheck disable=SC2155
   local now_path=$(pwd)
   # local fun_file=(check  configuration decorator file font logger notice string urandom)
   if [ -z "${SHELL_HOME}" ]; then
@@ -89,11 +90,25 @@ pre_name = ${SHELL_HOME}res/lock/.z_lock_
 time_out = 3
 result_file = ${SHELL_HOME}res/log/expect.log
 
+[network]
+# 重试间隔
+retry_delay = 1
+# 普通房重试次数
+retry = 3
+# 最大等待时间
+max_time = 300
+# 最大重试次数
+max_retry = 60
+
 [dingding]
 # 是否@所有人
 all = false
 # 是否启用
 use = true
+
+[hosts]
+# 主机地址列表
+machines = '192.168.0.1 192.168.0.2'
 EOF
   fi
   # 配置文件名称

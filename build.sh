@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # 该脚本用于打包项目
 #set -x
+#shellcheck disable=SC1090
+source "${SHELL_HOME}"common/common.sh
 
 # 将common.sh转换为一个sh脚本
 function make_common_file() {
@@ -12,21 +14,22 @@ function make_common_file() {
     echo "$file_data" >>"$common_build_file"
   done
   grep -Ev "source [a-zA-Z0-9]+\.sh" "${SHELL_HOME}common/common.sh" | sed '/^\s*$/d' |grep -v 'common/base' |grep -v 'common/common.sh' >>"$common_build_file"
-  # shellcheck disable=SC1090
-  source "$common_build_file"
   print_color "make common file successful" g
 }
 
 function main() {
   local file_name=$1
+  local build_result_file_name=${2:-build_result.sh}
   if [ ! -f "${file_name}" ]; then
     echo "not find $file_data"
     exit 1
   fi
+   common_build_file=".common_$(date '+%N').sh"
   # shellcheck disable=SC2016
-  if grep -q 'source "${SHELL_HOME}"common/common.sh' "$file_name"; then
-    common_build_file=".common_$(date '+%N').sh"
+  if grep -q 'common/common.sh' "$file_name"; then
     make_common_file
+  else
+    touch common_build_file
   fi
   {
     echo '#!/bin/bash'
@@ -43,11 +46,11 @@ function main() {
     print_color "build_failed!" r
   fi
   rm -rf "${common_build_file}"
+  chmod +x "${build_result_file_name}"
   if checkCommand shc ;then
-    print_color "do encryption file,it will generate $1.x and $1.x.c" b
-    shc -r -f build_result.sh
+    print_color "do encryption file,it will generate ${build_result_file_name}.x and ${build_result_file_name}.x.c" b
+    shc -r -f "${build_result_file_name}"
   fi
 }
 
-build_result_file_name="build_result.sh"
-main "$1"
+main "$1" "$2"
