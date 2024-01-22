@@ -7,7 +7,7 @@ function make_sshkey_file() {
   cat >"${temp_key_file_name}.sh" <<EOF
 #!/usr/bin/env bash
 
-key_file="$HOME/.ssh/id_rsa"
+key_file="\$HOME/.ssh/id_rsa"
 
 if [ ! -f "\${key_file}" ]; then
   echo "Generating SSH key..."
@@ -51,8 +51,16 @@ function main() {
 
 temp_key_file_name=".sshkey"
 temp_all_key_file_name=".all_sshkey"
-ssh_user="root"
-ssh_password="password"
+ssh_user="${2:-${EXPECT_USER}}"
+ssh_password="${1:-${EXPECT_PASSWORD}}"
+if [ -z "${ssh_user}" ];then
+  ssh_user=$(whoami)
+fi
+if [ -z "${ssh_password}" ];then
+  sendLog "please enter password in \$1 for $ssh_user !" 3
+  exit 1
+fi
+
 echo > "${temp_all_key_file_name}"
 # 主函数
 main

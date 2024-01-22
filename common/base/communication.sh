@@ -92,6 +92,7 @@ expect {
     }
     "password:" {
         send "${passwd}\r"
+        expect "${EXPECT_PROMPT}"
     }
 }
 EOF

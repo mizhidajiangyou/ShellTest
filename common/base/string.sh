@@ -24,7 +24,23 @@ function trim() {
 
 # 根据逗号分割字符串
 function splitByComma() {
-    local array  string=$1
-    IFS=',' read -ra array <<< "$string"
-    echo "${array[*]}"
+  local array string=$1
+  IFS=',' read -ra array <<<"$string"
+  echo "${array[*]}"
+}
+
+# 替换字符串内容
+function replaceString() {
+  # 被替换的字符串
+  local string=$1
+  # 匹配源
+  local aboriginal=$2
+  # 被替换值
+  local replaced=$3
+  echo "${string//${aboriginal}/${replaced}}"
+}
+
+# 替换{{ xxx }}
+function replaceCompose() {
+  replaceString "$1" "\{\{ $2 \}\}" "$3"
 }

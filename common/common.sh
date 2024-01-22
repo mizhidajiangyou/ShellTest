@@ -40,15 +40,13 @@ function check_bash() {
 }
 
 function source_all_base_function() {
-  # shellcheck disable=SC2155
-  local now_path=$(pwd)
   # local fun_file=(check  configuration decorator file font logger notice string urandom)
   if [ -z "${SHELL_HOME}" ]; then
     echo "请先配置变量SHELL_HOME。"
     exit 1
   fi
   # 不能用for导入，否则影响打包。
-  cd "${SHELL_HOME}"common/base || return 1
+  pushd "${SHELL_HOME}"common/base &> /dev/null || return 1
   source font.sh
   source print.sh
   source check.sh
@@ -60,21 +58,26 @@ function source_all_base_function() {
   source string.sh
   source urandom.sh
   source communication.sh
-  cd "${now_path}" || return 1
+  source process.sh
+  popd &> /dev/null || return 1
 }
 
 # 主函数
 function _main() {
-  check_bash
+  # 待有缘人优化吧
+  # check_bash
   source_all_base_function
   local cfg_name="global.cfg"
   # 文件不存在则创建
   if [[ ! -f "${SHELL_HOME}${cfg_name}" ]]; then
-    print_color "No file ${cfg_name} in ${SHELL_HOME},init it now !" r
-    sleep 3
+    sendLog "No file ${cfg_name} in ${SHELL_HOME},init it now !" 2 y
+    sleep 2
     touch "${SHELL_HOME}${cfg_name}" || exit 1
     cat >"${SHELL_HOME}${cfg_name}" <<EOF
 # 全局配置
+[global]
+find_layers = 1
+
 # 日志
 [log]
 level = debug
@@ -87,8 +90,16 @@ pre_name = ${SHELL_HOME}res/lock/.z_lock_
 
 # expect配置
 [expect]
+# 超时时间
 time_out = 3
+# 记录文件
 result_file = ${SHELL_HOME}res/log/expect.log
+# 通配符
+prompt = $
+# 用户（可不配置）
+user =
+# 密码 (可不配置)
+password =
 
 [network]
 # 重试间隔
@@ -110,6 +121,8 @@ use = true
 # 主机地址列表
 machines = '192.168.0.1 192.168.0.2'
 EOF
+  sendLog "init file successful! please check $cfg_name and retry !" 1 g
+  exit 0
   fi
   # 配置文件名称
   readConfig "${SHELL_HOME}${cfg_name}"
