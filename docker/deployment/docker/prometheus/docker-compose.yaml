@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    command:
+      - '--storage.tsdb.retention.time={{ TIME }}'
+      - '--storage.tsdb.retention.size={{ SIZE }}'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/console'
+      - '--web.enable-lifecycle'
+    user: "1001:1001"
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    restart: always
+    container_name: {{ NAME }}
+    environment:
+      TZ: Asia/Shanghai
+    labels:
+      mz-app.platform: "mz"
+      mz-app.type: "system"
+      mz-app.service: "mz-prometheus"
+      mz-app.metric: "{{ PORT }}"
+      storage_tsdb_retention_time: "{{ TIME }}"
+      storage_tsdb_retention_size: "{{ SIZE }}"
+    hostname: prometheus
+    volumes:
+      - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data:/prometheus
+    ports:
+      - "{{ PORT }}:9090/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - network1
+networks:
+  network1:
+    external: true
+    name: {{ NETWORK_NAME }}

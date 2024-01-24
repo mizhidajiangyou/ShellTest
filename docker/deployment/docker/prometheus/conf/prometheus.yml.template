@@ -1,0 +1,18 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 60s
+  scrape_timeout: 10s
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['prometheus:9090']
+        labels:
+          instance: prometheus
+  - job_name: metric
+    honor_labels: true
+#    http_sd_configs:
+#      - url: http://{{ ADDR }}/api
+    file_sd_configs:
+      - refresh_interval: 15s
+        files:
+          - /home/*.json

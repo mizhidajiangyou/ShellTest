@@ -1,7 +1,7 @@
 #!/bin/bash
 # 用于确认环境基础变量是否存在
 
-now_path=$(pwd)
+now_path="$(pwd)/"
 # 配置环境变量的文件
 bash_file="${HOME}/.bashrc"
 if [ "${SHELL_HOME}" != "${now_path}" ];then
