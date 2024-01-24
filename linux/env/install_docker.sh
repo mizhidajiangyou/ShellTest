@@ -101,6 +101,7 @@ function install_docker() {
 function config_docker() {
   local docker_data_root_path=${1:-/data}
   if [ ! -f /etc/docker/daemon.json ]; then
+    mkdir -p /etc/docker/
     cat >"/etc/docker/daemon.json" <<EOF
 {
   "data-root": "$docker_data_root_path",
