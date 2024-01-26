@@ -1,0 +1,47 @@
+volumes:
+  grafana_data:
+version: '3.8'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    user: "1001:1001"
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    restart: always
+    container_name: {{ NAME }}
+    environment:
+      - TZ=Asia/Shanghai
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_DEFAULT_DATA_SOURCE_NAME={{ PREFIX }}-Prometheus
+      - GF_DEFAULT_DATA_SOURCE_URL=http://{{ PREFIX }}-prometheus:9090
+    labels:
+      mz-app.platform: "mz"
+      mz-app.type: "system"
+      mz-app.service: "mz-grafana"
+      mz-app.metric: "{{ PORT }}"
+    hostname: {{ NAME }}
+    volumes:
+      - ./data:/var/lib/grafana
+    ports:
+      - "{{ PORT }}:3000/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000/-/healthy || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - network1
+networks:
+  network1:
+    external: true
+    name: {{ NETWORK_NAME }}

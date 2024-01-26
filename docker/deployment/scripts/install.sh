@@ -4,7 +4,6 @@ source scripts/common.sh
 
 #set -ex
 
-
 function main() {
     local service_list ser
     service_list=$(configParser install service images.cfg)

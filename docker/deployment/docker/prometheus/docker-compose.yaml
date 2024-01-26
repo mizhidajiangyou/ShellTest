@@ -27,7 +27,7 @@ services:
       mz-app.metric: "{{ PORT }}"
       storage_tsdb_retention_time: "{{ TIME }}"
       storage_tsdb_retention_size: "{{ SIZE }}"
-    hostname: prometheus
+    hostname: {{ NAME }}
     volumes:
       - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./data:/prometheus
