@@ -5,8 +5,8 @@
 function checkCommand() {
   local com="$1"
   if ! command -v "$com" &>/dev/null; then
-    sendLog "检测命令$com 不可用。 " 3 &>/dev/null
-    return 1
+    sendLog "检测命令$com 不可用。 " 3
+    exit 1
   else
     sendLog "检测命令$com 可用。 " 0 &>/dev/null
     return 0
@@ -31,9 +31,36 @@ function checkAvailable() {
   # 检查容量是否小于100G
   if ((available_space_gb < min)); then
     sendLog "失败：$check_dir 目录可用容量低于 $min G。当前可用容量为 $available_space_gb GB" 3
+    return 1
   else
     sendLog "成功：$check_dir 目录可用容量为 $available_space_gb GB" 1 g
+    return 0
   fi
+}
+
+# 确认内存和cpu是否符合规范
+function checkCPUMemory() {
+  local total_memory cpu_cores need_cpu need_memory
+  need_cpu=$(echo "$1" | awk '{result = sprintf("%d", $1); print result}')
+  need_memory=$(echo "$2" | awk '{result = sprintf("%d", $1 * 1000000); print result}')
+  if [ "$need_cpu" -eq 0 ] || [ "$need_memory" -eq 0 ]; then
+    sendLog "错误的cpu或内存入参！" 3
+    return 1
+  fi
+  if [[ $(uname -s) != "Darwin" ]]; then
+    total_memory=$(free | awk '/^Mem:/{print $2}')
+    cpu_cores=$(grep -c '^processor' /proc/cpuinfo)
+  else
+    total_memory=$(sysctl -n hw.memsize | awk '{printf "%d", $0/1000}')
+    cpu_cores=$(sysctl -n hw.ncpu)
+  fi
+  sendLog "当前系统cpu核数为：$cpu_cores,内存为${2}GB"
+
+  if [ "${total_memory}" -lt "${need_memory}" ] || [ "${cpu_cores}" -lt "${need_cpu}" ]; then
+    sendLog "机器不符合CPU${cpu_cores},内存${2}GB的标准，不符合该标准后续可能无法正常部署。" 3
+    return 1
+  fi
+
 }
 
 # 判断IP是否可用
@@ -71,13 +98,25 @@ function waitIpReady() {
 }
 
 function checkSSHKey() {
-    local  key_file="$HOME/.ssh/id_rsa"
+  local key_file="$HOME/.ssh/id_rsa"
 
-    if [ ! -f "$key_file" ]; then
-        sendLog "Generating SSH key..."
-        ssh-keygen -t rsa -b 4096 -f "$key_file" -N ""
-        sendLog "SSH key generated."
-    else
-        sendLog "SSH key already exists." 0
-    fi
+  if [ ! -f "$key_file" ]; then
+    sendLog "Generating SSH key..."
+    ssh-keygen -t rsa -b 4096 -f "$key_file" -N ""
+    sendLog "SSH key generated."
+  else
+    sendLog "SSH key already exists." 0
+  fi
+}
+
+function checkLocalPort() {
+  local port=$1
+  if netstat -tuln | grep -q "${port}" &>/dev/null; then
+    sendLog "port ${port} is used." &>/dev/null
+    return 1
+  else
+    sendLog "port ${port} is don't used." 0 &>/dev/null
+    return 0
+  fi
+
 }

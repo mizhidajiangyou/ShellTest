@@ -35,6 +35,14 @@ function checkFileForce() {
   fi
 }
 
+function getSwitch() {
+    configParser "multi" "switch" "images.cfg"
+}
+
+function getPath() {
+    configParser "storage" "install_path" "images.cfg"
+}
+
 function replaceDockerConfig() {
   # 被替换的字符串
   local string=$1

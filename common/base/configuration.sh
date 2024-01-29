@@ -79,7 +79,7 @@ function readConfig() {
       varname="$(echo "${section}_${varname}" | tr '[:lower:]' '[:upper:]')"
       # 检查变量名是否已经存在
       if [[ -n "${!varname:-}" ]]; then
-        sendLog "已经存在变量: ${varname} ，将进行覆盖" 2
+        sendLog "已经存在变量: ${varname} ，将进行覆盖" 2 &> /dev/null
         # exit 1
       fi
       # 导出变量
