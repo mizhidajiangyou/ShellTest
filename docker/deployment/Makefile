@@ -11,11 +11,11 @@ help: ## This help.
 
 .PHONY: limit
 limit: ## 获取配置文件中的cpu和内存限额情况
-	@./script/get_config_limit.sh
+	@./scripts/get_config_limit.sh
 
 .PHONY: load
 load: ## 加载images目录下的镜像.
-	@./script/load_images.sh
+	@./scripts/load_images.sh
 
 .PHONY: install
 install: ## 进行一键安装

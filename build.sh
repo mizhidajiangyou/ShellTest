@@ -14,7 +14,7 @@ function make_common_file() {
     echo "$file_data" >>"$common_build_file"
   done
   grep -Ev "source [a-zA-Z0-9]+\.sh" "${SHELL_HOME}common/common.sh" | sed '/^\s*$/d' |grep -v 'common/base' |grep -v 'common/common.sh' >>"$common_build_file"
-  print_color "make common file successful" g
+  sendLog "Make common file successful." 0
 }
 
 function main() {
@@ -41,14 +41,14 @@ function main() {
   } >"$build_result_file_name"
   # shellcheck disable=SC2181
   if [ $? -eq 0 ]; then
-    print_color "build_successful! result in $build_result_file_name" g
+    sendLog "Build_successful! result in $build_result_file_name" 1 g
   else
-    print_color "build_failed!" r
+    sendLog "Build_failed!" 3
   fi
   rm -rf "${common_build_file}"
   chmod +x "${build_result_file_name}"
   if checkCommand shc ;then
-    print_color "do encryption file,it will generate ${build_result_file_name}.x and ${build_result_file_name}.x.c" b
+    sendLog "do encryption file,it will generate ${build_result_file_name}.x and ${build_result_file_name}.x.c" 1 b
     shc -r -f "${build_result_file_name}"
   fi
 }
