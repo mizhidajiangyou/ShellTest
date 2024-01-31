@@ -17,7 +17,7 @@ function configParser() {
   local find_section=false
   local line_number=1
   # 最后一行不为空会影响读取
-  local last_line
+  local last_line key val
   last_line=$(tail -n 1 "$config_file")
   if [[ -n "$last_line" ]]; then
       echo >> "$config_file"
@@ -37,8 +37,8 @@ function configParser() {
       if [[ ${needed_key} == ${key} ]]; then
         if [[ ! ${new_values} ]]; then
           echo "${val}"
-          uppercase_string=$(echo "${section}_${needed_key}" | tr '[:lower:]' '[:upper:]')
-          eval export "${uppercase_string}"="$(trim "${val}")"
+          # uppercase_string=$(echo "${section}_${needed_key}" | tr '[:lower:]' '[:upper:]')
+          # eval export "${uppercase_string}"="$(trim "${val}")"
         else
           if [[ -z ${val} ]]; then
             sendLog "old value is empty, adding new value: ${new_values}"
@@ -87,3 +87,39 @@ function readConfig() {
     fi
   done <"${config_file}"
 }
+
+# 读取一个section下的所有key 或者 values
+function getConfigSection() {
+  # section
+  local section="${1}"
+  # file
+  local config_file="${2}"
+  # type
+  local type="${3:-key}"
+  # check file
+  config_file=$(checkCfgFile "$config_file")
+  local find_section=false
+  # 最后一行不为空会影响读取
+  local last_line key val
+  last_line=$(tail -n 1 "$config_file")
+  if [[ -n "$last_line" ]]; then
+      echo >> "$config_file"
+  fi
+  while read -r line; do
+    if [[ ${line} == \[${section}\]* ]]; then
+      find_section=true
+    elif [[ ${find_section} == true && (${line} == \[*) ]]; then
+      break
+    elif [[ ${find_section} == true ]]; then
+      IFS="=" read -r key val <<<"${line}"
+      key=$(trim "${key}")
+      val=$(trim "${val}")
+      if [[ "${type}" == "key" ]];then
+        echo "${key}"
+      else
+        echo "${val}"
+      fi
+    fi
+  done < <(cat "${config_file}")
+}
+

@@ -53,7 +53,7 @@ function checkFile() {
       return 1
     fi
   else
-    sendLog "File exists: ${file_name}"
+    sendLog "File exists: ${file_name}" 0
   fi
   return 0
 }
@@ -76,7 +76,7 @@ function checkDir() {
       return 1
     fi
   else
-    sendLog "Directory exists: ${dir_name}"
+    sendLog "Directory exists: ${dir_name}" 0
   fi
   return 0
 }

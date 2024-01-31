@@ -17,7 +17,7 @@ function check_cpu_and_memory() {
 function check_user() {
   local now_user need_user_id user_info
   now_user=$(whoami)
-  need_user_id="$(configParser "global" "user_id" images.cfg)"
+  need_user_id="$(configParser "expect" "user_id" global.cfg)"
   user_info=$(grep "^$now_user:" "/etc/passwd" | awk -F: '{printf "%s:%s",$3,$4}')
   if [ "${user_info}" != "${need_user_id}:${need_user_id}" ]; then
     sendLog "当前用户$now_user,不符合部署的用户需求,应该使用配置所需的${need_user_id}:${need_user_id}用户进行部署。" 2 y

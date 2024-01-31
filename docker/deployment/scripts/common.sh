@@ -36,11 +36,11 @@ function checkFileForce() {
 }
 
 function getSwitch() {
-    configParser "multi" "switch" "images.cfg"
+  configParser "multi" "switch" "images.cfg"
 }
 
 function getPath() {
-    configParser "storage" "install_path" "images.cfg"
+  configParser "storage" "install_path" "images.cfg"
 }
 
 function replaceDockerConfig() {
@@ -68,4 +68,16 @@ function replaceDockerConfig() {
     value="${prefix}-${value}"
   fi
   replaceCompose "${string}" "${aboriginal}" "${value}"
+}
+
+function for_service_do() {
+  local service_list ser function_name function_args
+  function_name=$1
+  shift
+  function_args=$*
+  service_list=$(configParser install service images.cfg)
+  # shellcheck disable=SC2034
+  for ser in ${service_list[*]}; do
+    "$function_name" "$ser" "$function_args"
+  done
 }
