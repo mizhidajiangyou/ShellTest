@@ -24,12 +24,10 @@ function main() {
     echo "not find $file_data"
     exit 1
   fi
-   common_build_file=".common_$(date '+%N').sh"
+   common_build_file="$(mktemp)"
   # shellcheck disable=SC2016
   if grep -q 'common/common.sh' "$file_name"; then
     make_common_file
-  else
-    touch common_build_file
   fi
   {
     echo '#!/bin/bash'
