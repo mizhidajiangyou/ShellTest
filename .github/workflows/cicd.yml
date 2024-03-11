@@ -19,4 +19,4 @@ jobs:
       run: |
         echo "do run build.sh"
         export SHELL_HOME="$(pwd)/"
-        bash ./docker/build/build.sh
+      # bash ./docker/build/build.sh
