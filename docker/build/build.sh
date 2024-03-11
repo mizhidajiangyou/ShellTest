@@ -11,6 +11,6 @@ function build_docker_then_push() {
   docker push "${image}"
   popd || exit 1
 }
-cd "$SHELL_HOME/docker/build/docker" || exit 1
+cd "${SHELL_HOME}docker/build/docker" || exit 1
 # shellcheck disable=SC2010
 multiProcess build_docker_then_push "$(ls |grep -v '.sh')"

@@ -18,4 +18,5 @@ jobs:
     - name: Build the Docker image
       run: |
         echo "do run build.sh"
+        export SHELL_HOME="$(pwd)/"
         bash ./docker/build/build.sh
