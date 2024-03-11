@@ -8,7 +8,7 @@ function build_docker_then_push() {
   sendLog "do build and push $image." 0
   pushd "$tag"  || exit 1
   docker build . -t "${image}"
-  docker push "${image}"
+  # docker push "${image}"
   popd || exit 1
 }
 cd "${SHELL_HOME}docker/build/docker" || exit 1
