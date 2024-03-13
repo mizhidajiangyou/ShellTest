@@ -39,7 +39,7 @@ INIT_USER_NAME="mz001"
 INIT_USER_ID="1001"
 # 用户密码
 INIT_PASSWORD=$(perl -e 'print crypt("mypassword", "password")')
-_main
+main
 
 
 
