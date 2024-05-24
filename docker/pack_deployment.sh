@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#e.g. ./docker/pack_deployment.sh build v0.0.1 x86
-
+#e.g. ./docker/pack_deployment.sh build project_name v0.0.1 x86
+# set -xe
 # shellcheck disable=SC1090
 source "${SHELL_HOME}"common/common.sh
 
@@ -14,6 +14,16 @@ function init_common_file() {
 function restore_common_file() {
   cp .common_file_bak.sh docker/deployment/scripts/common.sh
   rm -rf .common_file_bak.sh .common_file_resulet.sh*
+}
+
+function init_install_file() {
+    if  ! checkDir docker/project/"$project";then
+      sendLog "No such directory !"
+      exit 1
+    else
+      rm -rf docker/deployment/docker docker/deployment/install
+      cp -rf docker/project/"$project"/docker  docker/project/"$project"/install docker/deployment
+    fi
 }
 
 function do_download() {
@@ -37,8 +47,12 @@ function tar_pack() {
 }
 
 function main() {
+  haveVal "$mode"
+  haveVal "$project"
+  haveVal "$tag"
   sendLog "Do make ${tag} package." 1
   init_common_file
+  init_install_file
   case ${mode} in
   build)
     do_download
@@ -57,7 +71,8 @@ function main() {
 
 # tag
 mode="$1"
-tag="$2"
-framework=${3:-x86}
+project="$2"
+tag="$3"
+framework=${4:-x86}
 
 main

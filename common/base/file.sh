@@ -102,6 +102,15 @@ function checkVal() {
   return 0
 }
 
+# 变量为空则结束脚本
+function haveVal() {
+  local val="${1}"
+ if [[ -z "${val}" ]]; then
+    sendLog "Val is empty." 3
+    exit 1
+  fi
+}
+
 # 寻找文件是否存在，会根据目录层级往前追述5层
 function checkCfgFile() {
   # 定义要查找的文件名
