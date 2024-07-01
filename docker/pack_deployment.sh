@@ -14,6 +14,7 @@ function init_common_file() {
 function restore_common_file() {
   cp .common_file_bak.sh docker/deployment/scripts/common.sh
   rm -rf .common_file_bak.sh .common_file_resulet.sh*
+  rm -rf docker/deployment/install docker/deployment/docker docker/deployment/images
 }
 
 function init_install_file() {
@@ -29,7 +30,11 @@ function init_install_file() {
 function do_download() {
   sendLog "do download images." 0
   pushd docker/deployment &>/dev/null || exit 1
-  bash scripts/save_images.sh
+  if ! bash scripts/save_images.sh;then
+    popd &>/dev/null || exit 1
+    restore_common_file
+    exit 1
+  fi
   popd &>/dev/null || exit 1
 }
 
@@ -50,6 +55,9 @@ function main() {
   haveVal "$mode"
   haveVal "$project"
   haveVal "$tag"
+  if ! checkDir "docker/project/$project";then
+    exit 1
+  fi
   sendLog "Do make ${tag} package." 1
   init_common_file
   init_install_file

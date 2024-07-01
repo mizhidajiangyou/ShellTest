@@ -87,6 +87,7 @@ EOF
 }
 
 function install_docker() {
+  print_color "将要解压的包文件为：${docker_package_name}"
   tar -zxvf "${docker_package_name}"
   cd docker || exit 1
   if ! ./docker --version &>/dev/null; then
@@ -121,7 +122,7 @@ function main() {
   local base_url="https://mirrors.aliyun.com/docker-ce/"
   local path_url="/linux/static/stable/"
   local framework_name="x86_64/"
-  docker_package_name
+  local docker_package_name
   if [[ ! $(uname -m) =~ "x86" ]]; then
     framework_name='aarch64/'
   fi
