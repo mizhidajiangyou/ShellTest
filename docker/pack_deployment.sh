@@ -62,11 +62,11 @@ function main() {
   init_common_file
   init_install_file
   case ${mode} in
-  build)
+  build|b)
     do_download
     tar_pack
     ;;
-  simple)
+  simple|s)
     tar_pack
     ;;
   *)

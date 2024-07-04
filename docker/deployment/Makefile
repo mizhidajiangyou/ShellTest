@@ -19,6 +19,7 @@ load: ## 加载images目录下的镜像.
 
 .PHONY: install
 install: ## 进行一键安装
+	@./scripts/preflight.sh
 	@./scripts/install.sh
 
 
