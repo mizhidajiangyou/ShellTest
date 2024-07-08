@@ -13,10 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    #
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: |
-        echo "do run build.sh"
-        export SHELL_HOME="$(pwd)/"
-        bash ./docker/build/build.sh
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      #
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+        run: |
+          echo "do run build.sh"
+          export SHELL_HOME="$(pwd)/"
+          bash ./docker/build/build.sh
