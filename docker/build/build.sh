@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1090
 source "${SHELL_HOME}"common/common.sh
-
+set -xeo pipefail
 function build_docker_then_push() {
   local tag=$1 image
   image="mzdjy/build:$tag-auto"
