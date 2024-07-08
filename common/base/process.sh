@@ -22,6 +22,7 @@ function closeFileDescriptor() {
 
 }
 
+# 使用该方法不能set -x
 function multiProcess() {
   local process function_name function_args a p descript=1001 err
   err=$(mktemp)
@@ -40,19 +41,19 @@ function multiProcess() {
     read -r -u${descript}
     {
       sendLog "Do function: ${function_name} with args: $a" 0
-      "${function_name}" "$a" 2>>"${err}"
+      "${function_name}" "$a" >/dev/null 2>>"${err}"
       echo "" >&$descript
-    }  &
+    } &
   done
   wait
   closeFileDescriptor $descript
-  if [[ -s "${err}" ]];then
-     sendLog "Some errors in doing  ${function_name}."
-     sendLog "$(cat "${err}")" 3 n
-     rm -rf "${err}"
-     exit 1
+  if [[ -s "${err}" ]]; then
+    sendLog "Some errors in doing  ${function_name}."
+    sendLog "$(cat "${err}")" 3 n
+    rm -rf "${err}"
+    exit 1
   else
-     rm -rf "${err}"
+    rm -rf "${err}"
   fi
   sendLog "Do multi process end." 0
 }

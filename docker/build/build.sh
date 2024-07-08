@@ -6,11 +6,12 @@ function build_docker_then_push() {
   local tag=$1 image
   image="mzdjy/build:$tag-auto"
   sendLog "do build and push $image." 0
-  cd "$tag"  || exit 1
-  docker build . -t "${image}"
-  docker push "${image}"
-#  cd - || exit 1
+  pushd "$tag"  || exit 1
+  docker build . -t "${image}" 1&>/dev/null
+  docker push "${image}" 1&>/dev/null
+  popd  || exit 1
 }
 cd "${SHELL_HOME}docker/build/docker" || exit 1
+set +x
 # shellcheck disable=SC2010
 multiProcess build_docker_then_push "$(ls |grep -v '.sh')"
