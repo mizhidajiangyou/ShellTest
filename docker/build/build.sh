@@ -9,7 +9,7 @@ function build_docker_then_push() {
   cd "$tag"  || exit 1
   docker build . -t "${image}"
   docker push "${image}"
-  cd - || exit 1
+#  cd - || exit 1
 }
 cd "${SHELL_HOME}docker/build/docker" || exit 1
 # shellcheck disable=SC2010
