@@ -1,10 +1,7 @@
-volumes:
-  grafana_data:
 version: '3.8'
 services:
   {{ NAME }}:
     image: {{ IMAGE }}
-    user: "1001:1001"
     deploy:
       resources:
         limits:

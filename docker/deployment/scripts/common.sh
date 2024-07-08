@@ -27,6 +27,33 @@ EOF
   fi
 }
 
+function writeRestart() {
+  if [ ! -f restart.sh ]; then
+    sendLog "write restart.sh" 0
+    cat >restart.sh <<EOF
+#!/bin/bash
+
+docker-compose -f docker-compose-production.yaml restart
+EOF
+    chmod +x restart.sh
+  fi
+}
+
+
+function writeUpdate() {
+  if [ ! -f update.sh ]; then
+    sendLog "write update.sh" 0
+    cat >update.sh <<EOF
+#!/bin/bash
+
+docker-compose -f docker-compose-production.yaml pull
+docker-compose -f docker-compose-production.yaml restart
+EOF
+    chmod +x update.sh
+  fi
+}
+
+
 function checkFileForce() {
   local file=$1
   if [ ! -f "${file}" ]; then

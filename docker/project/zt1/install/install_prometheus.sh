@@ -35,6 +35,8 @@ echo "${prometheus_yaml}" >./docker/${service_name}/conf/prometheus.yml
 # 生成启动文件
 writeStart
 writeStop
-cp -rf start.sh stop.sh docker/${service_name}/
+writeRestart
+writeUpdate
+cp -rf start.sh stop.sh restart.sh update.sh docker/${service_name}/
 
 sendLog "Successfully created $service_name/docker-compose-production.yml !" 1 g
