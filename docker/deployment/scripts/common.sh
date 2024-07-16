@@ -89,7 +89,7 @@ function replaceDockerConfig() {
     if [ "${replaced}" == "memory" ]; then
       value="${value}M"
     fi
-  elif [ "${replaced}" == "name" ]; then
+  elif [ "${replaced}" == "name" ]  || [ "${replaced}" == "exporter_name" ]; then
     local prefix
     prefix=$(configParser "global" "prefix" "images.cfg")
     value="${prefix}-${value}"

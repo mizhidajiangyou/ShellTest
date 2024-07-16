@@ -29,6 +29,29 @@ services:
       timeout: 10s
     networks:
       - network1
+  {{ EXPORTER_NAME }}:
+    image: {{ EXPORTER_IMAGE }}
+    container_name: {{ EXPORTER_NAME }}
+    command: --nginx.scrape-uri=http://{{ NAME }}:8080/stub_status
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ EXPORTER_CPU }}"
+          memory: "{{ EXPORTER_MEMORY }}"
+    ports:
+      - "{{ EXPORTER_PORT }}:9113"
+    environment:
+      TZ: "Asia/Shanghai"
+    healthcheck:
+      test: wget http://localhost:9113/metrics -O /dev/null || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    depends_on:
+      - {{ NAME }}
+    networks:
+      - network1
 networks:
   network1:
     external: true

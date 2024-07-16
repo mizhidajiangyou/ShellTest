@@ -15,4 +15,4 @@ scrape_configs:
     file_sd_configs:
       - refresh_interval: 15s
         files:
-          - /home/*.json
+          - /home/target/*.json

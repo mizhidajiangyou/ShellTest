@@ -1,0 +1,10 @@
+[
+  {
+    "targets": [
+      "mzdjy-nginx_exporter:9113"
+    ],
+    "labels": {
+      "service_id": "nginx_exporter"
+    }
+  }
+]
