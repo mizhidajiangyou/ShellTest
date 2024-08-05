@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    restart: always
+    container_name: {{ NAME }}
+    environment:
+      TZ: "Asia/Shanghai"
+      ETCDCTL_API: "3"
+#      ETCD_ENABLE_V2: "true"
+#      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_ROOT_PASSWORD: "test@001"
+      ETCD_LOG_LEVEL: "info"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://{{ HOST_IP }}:{{ PORT11 }}"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_QUOTA_BACKEND_BYTES: 8589934592
+      ETCD_AUTO_COMPACTION_MODE: "periodic"
+      ETCD_AUTO_COMPACTION_RETENTION: "1h"
+    labels:
+      mz-app.platform: "mz"
+      mz-app.type: "system"
+      mz-app.service: "mz-{{ NAME }}"
+      mz-app.metric: "{{ PORT }}"
+    hostname: {{ NAME }}
+    volumes:
+      - ./data:/etcd_data
+    ports:
+      - "{{ PORT11 }}:2379/tcp"
+      - "{{ PORT22 }}:2380/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: curl --fail http://localhost:2379/health || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - network1
+networks:
+  network1:
+    external: true
+    name: {{ NETWORK_NAME }}

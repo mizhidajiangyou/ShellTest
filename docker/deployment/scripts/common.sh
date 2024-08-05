@@ -39,7 +39,6 @@ EOF
   fi
 }
 
-
 function writeUpdate() {
   if [ ! -f update.sh ]; then
     sendLog "write update.sh" 0
@@ -52,7 +51,6 @@ EOF
     chmod +x update.sh
   fi
 }
-
 
 function checkFileForce() {
   local file=$1
@@ -89,7 +87,7 @@ function replaceDockerConfig() {
     if [ "${replaced}" == "memory" ]; then
       value="${value}M"
     fi
-  elif [ "${replaced}" == "name" ]  || [ "${replaced}" == "exporter_name" ]; then
+  elif [ "${replaced}" == "name" ] || [ "${replaced}" == "exporter_name" ]; then
     local prefix
     prefix=$(configParser "global" "prefix" "images.cfg")
     value="${prefix}-${value}"
@@ -107,4 +105,29 @@ function for_service_do() {
   for ser in ${service_list[*]}; do
     "$function_name" "$ser" "$function_args"
   done
+}
+
+function runDocker() {
+  local name=$1
+  local image=$2
+  docker run --rm -itd --entrypoint /bin/sh --name "${name}" "${image}" -c "tail -f /dev/null"
+}
+
+function stopDocker() {
+  docker stop "$1"
+}
+
+function cpDocker() {
+  local source=$1
+  local destination=$2
+  docker cp "${source}" "${destination}"
+}
+
+function checkDockerExist() {
+  if docker ps -a | grep -q "$1"; then
+    sendLog "docker $1 is running" 3 &> /dev/null
+    return 1
+  else
+    return 0
+  fi
 }

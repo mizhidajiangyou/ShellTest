@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    restart: always
+    container_name: {{ NAME }}
+    environment:
+      - TZ=Asia/Shanghai
+      - COMPATIBLE_MODE=4
+      - CASE_SENSITIVE=0
+      - PAGE_SIZE=16
+      - LD_LIBRARY_PATH=/opt/dmdbms/bin
+      - INSTANCE_NAME={{ NAME }}
+      - SYSDBA=SYSDBA
+      - SYSDBA_PWD=SYSDBA001
+    labels:
+      mz-app.platform: "mz"
+      mz-app.type: "system"
+      mz-app.service: "mz-"
+      mz-app.metric: "{{ PORT }}"
+    hostname: {{ NAME }}
+    volumes:
+      - ./data:/opt/dmdbms/data
+    ports:
+      - "{{ PORT }}:5236/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test:  /opt/dmdbms/bin//disql   ${SYSDBA}/${SYSDBA_PWD}@localhost  -e 'SELECT 1'   || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - network1
+networks:
+  network1:
+    external: true
+    name: {{ NETWORK_NAME }}

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-#e.g. ./docker/pack_deployment.sh build project_name v0.0.1 x86
-# set -xe
+# e.g.
+# build with images ./docker/pack_deployment.sh build project_name v0.0.1 x86
+# build without images ./docker/pack_deployment.sh simple project_name v0.0.1 x86
+
 # shellcheck disable=SC1090
 source "${SHELL_HOME}"common/common.sh
 

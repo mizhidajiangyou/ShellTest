@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 该脚本用于根据配置文件来初始化project中需要的compose和install安装脚本。
-# e.g. ./init_project.sh
+# e.g. ./init_project.sh DBBase mysql redis
 
 #set -xeo pipefail
 # shellcheck disable=SC1090
@@ -8,15 +8,74 @@ source "${SHELL_HOME}"common/common.sh
 
 function initCFG() {
   if [ ! -f global.cfg ]; then
+    init_global=true
     sendLog "write global.cfg" 0
     cat >global.cfg <<EOF
-等待添加
+# 全局配置
+[global]
+find_layers = 1
+process_num = 5
+
+# 日志
+[log]
+level = debug
+console_print = true
+file = ${SHELL_HOME}res/log/shell.log
+
+# expect配置
+[expect]
+# 超时时间
+time_out = 3
+# 记录文件
+result_file = ${SHELL_HOME}res/log/expect.log
+# 通配符
+prompt = $
+# 用户
+user = mz001
+# 密码
+password = password
+# id
+user_id = 1001
+
+[hosts]
+# 主机地址列表
+machines = 192.168.0.1
+
 EOF
   fi
   if [ ! -f images.cfg ]; then
+    init_image=true
     sendLog "write images.cfg" 0
     cat >images.cfg <<EOF
-等待添加
+[global]
+# 项目版本
+version = v0.0.1
+# 前缀
+prefix = mzdjy
+# 倍率缩放
+quota = 1
+# 架构
+framework = x86
+
+[storage]
+pvc_path = /data/docker_pvc
+install_path = /data/
+
+[network]
+network = eth0
+local_ip = 10.23.31.160
+model = bridge
+network_name = mz-network
+subnet = 10.77.0.0/16
+open_port = true
+
+[multi]
+switch = off
+node_ip =
+service_ip =
+nfs =
+
+
 EOF
   fi
 }
@@ -65,6 +124,8 @@ cp -rf  start.sh stop.sh restart.sh update.sh docker/${service_name}/
 
 sendLog "Successfully created $service_name/docker-compose-production.yml !" 1 g
 EOF
+
+  chmod +x install_"${service_name}".sh
 }
 
 function initDocker() {
@@ -85,7 +146,7 @@ services:
     labels:
       mz-app.platform: "mz"
       mz-app.type: "system"
-      mz-app.service: "mz-"
+      mz-app.service: "mz-{{ NAME }}"
       mz-app.metric: "{{ PORT }}"
     hostname: {{ NAME }}
     volumes:
@@ -121,26 +182,49 @@ function main() {
 
   # 进入项目名称对应的目录
   cd "$project_name" || exit 1
+  initCFG
   mkdir -p install docker
   # 循环读取组件列表
   for component in "${components[@]}"; do
-    pushd install &> "${LOG_FILE}"|| exit 1
+    pushd install &>"${LOG_FILE}" || exit 1
     sendLog "create install_${component} ..." 1
     initInstall "$component"
-    popd &> "${LOG_FILE}"|| exit 1
-    pushd docker &> "${LOG_FILE}"|| exit 1
+    popd &>"${LOG_FILE}" || exit 1
+    pushd docker &>"${LOG_FILE}" || exit 1
     # 判断目录组件是否存在
     if [ ! -d "$component" ]; then
       mkdir -p "$component"
-      pushd "$component"  &> "${LOG_FILE}" || exit 1
+      pushd "$component" &>"${LOG_FILE}" || exit 1
       sendLog "create $component/docker-compose.yaml ..." 1
       initDocker "$component"
-      popd &> "${LOG_FILE}"|| exit 1
+      popd &>"${LOG_FILE}" || exit 1
     else
       sendLog "Docker $component already exists, skipping..." 2
     fi
-    popd &> "${LOG_FILE}"|| exit 1
+    popd &>"${LOG_FILE}" || exit 1
+    # 给images.cfg添加组件
+if [ "$init_image" = true ]; then
+    cat >>images.cfg <<EOF
+[$component]
+image =
+name = $component
+cpu = 1
+memory = 1024M
+port =
+
+EOF
+fi
   done
+  if [ "$init_image" = true ]; then
+    cat >>images.cfg <<EOF
+[install]
+service = ${components[@]}
+
+[other_images]
+# enter other images here
+
+EOF
+  fi
 
   # 输出完成
   sendLog "All components initialized successfully." 1 g
@@ -155,5 +239,7 @@ fi
 project_name=$1
 shift
 components=("$@")
+init_image=false
+init_global=false
 
 main
