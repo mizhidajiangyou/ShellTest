@@ -61,6 +61,13 @@ function convert_text() {
 
 }
 
+# 易于外部使用的带颜色ASCII 字符输出
+function print_asi() {
+  local input_text=$1
+  local color=${2:-none}
+  convert_text "${input_text}" "${Z_COLOR_COLLECTION[$color]}"
+}
+
 # 颜色输出
 function enter_color() {
   local color=${1:-n}

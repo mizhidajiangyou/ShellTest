@@ -2,7 +2,6 @@
 #用于输出艺术字
 # e.g. convert_text v0.0.1-release1
 
-
 declare -Ag Z_ASCII_COLLECTION Z_COLOR_COLLECTION
 Z_ASCII_COLLECTION=(
   ["0"]="____  \n/ __ \ \n| |  | |\n| |__| |\n\____/ \n"
@@ -19,11 +18,16 @@ Z_ASCII_COLLECTION=(
   ["-"]="\n    \n_____ \n|_____|\n  \n"
   ["v"]="\n__   __ \n\ \ / / \n\ V /  \n\_/   \n"
   ["r"]="\n_ __  \n| '__| \n| |    \n|_|    \n"
-  ["e"]="\n___   \n/ _ \  \n|  __/  \n\___|  \n"
   ["l"]="_    \n| |   \n| |   \n| |   \n|_|   \n"
-  ["a"]="\n__ _  \n / _\` | \n| (_| | \n\__,_| \n"
   ["s"]="\n___   \n/ __|  \n\__ \\  \n|___/  \n"
+  ["a"]="\n__ _  \n / _\` | \n| (_| | \n\__,_| \n"
   ["b"]="_     \n| |__  \n| '_ \ \n| |_) |\n|_.__/ \n"
+  ["c"]="\n  ___  \n / __| \n| (__  \n \___| \n"
+  #  ["d"]="_ _ \n| | | \n| | | \n| |_| \n|____/ \n"
+  ["e"]="\n___   \n/ _ \  \n|  __/  \n\___|  \n"
+  ["o"]="\n ___  \n / _ \ \n| (_) |\n \___/ \n"
+  ["k"]="\n_  __ \n| |/ / \n|  <   \n |_|\_\ \n"
+  #  ["f"]="_ \n| _ \ \n| (_) | \n|____/ \n"
   ["t"]="_     \n| |_   \n| __|  \n| |_   \n \__|  \n"
   ["x"]="\n__  __ \n\ \/ / \n >  <  \n/_/\_\ \n"
   ["m"]="\n_ __ ___  \n| '_ \` _ \ \n| | | | | |\n|_| |_| |_|\n"
@@ -75,6 +79,5 @@ Z_COLOR_COLLECTION=(
   ["n"]="\033[0m"
 )
 
-echo "${Z_ASCII_COLLECTION[*]}" &> /dev/null
-echo "${Z_COLOR_COLLECTION[*]}" &> /dev/null
-
+echo "${Z_ASCII_COLLECTION[*]}" &>/dev/null
+echo "${Z_COLOR_COLLECTION[*]}" &>/dev/null
