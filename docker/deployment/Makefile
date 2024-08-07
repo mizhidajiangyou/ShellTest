@@ -27,7 +27,7 @@ install: ## 进行一键安装
 install.%: ## 安装指定的目录
 	$(eval bin := $(word 1,$(subst ., ,$*)))
 	@./install/install_$(bin).sh
-	@cd docker/$(bin) && ./start.sh
+	@cd artifact/$(bin) && ./start.sh
 
 
 

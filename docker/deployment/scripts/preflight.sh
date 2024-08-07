@@ -38,9 +38,10 @@ function check_port_ok() {
     port="$(configParser "${ser}" "port" images.cfg)"
     # 校验port
     if ! checkLocalPort "$port";then
-      sendLog "校验端口: ${port}被使用。" 3
+      sendLog "校验${ser}端口: ${port}被使用。" 3
       exit 1
     fi
+    sendLog "校验${ser}端口: ${port}可用。"
   done
 
 }
