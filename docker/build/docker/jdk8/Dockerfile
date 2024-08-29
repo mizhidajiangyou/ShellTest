@@ -16,7 +16,7 @@ RUN mvn clean package
 # 使用一个基础的 Java 8 镜像作为基础镜像
 FROM mzdjy/visualization:alpine-jave8
 
-WORKDIR /data/app/
+WORKDIR /app/
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk add tzdata
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
