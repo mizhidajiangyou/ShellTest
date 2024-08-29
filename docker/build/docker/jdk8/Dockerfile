@@ -30,6 +30,6 @@ COPY --from=build /app/JavaTest/src/main/resources/application.properties /app/a
 
 EXPOSE 27771
 
-ENTRYPOINT ["sh","-c","java ${JAVA_OPTS} -Xms500m -Xmx500m -Xmn125m -XX:+UseG1GC  test.jar --spring.config.location=./application.properties "]
+ENTRYPOINT ["sh","-c","java ${JAVA_OPTS} -Xms500m -Xmx500m -Xmn125m -XX:+UseG1GC  app.jar --spring.config.location=./application.properties "]
 
 
