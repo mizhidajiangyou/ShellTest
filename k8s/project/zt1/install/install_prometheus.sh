@@ -14,6 +14,12 @@ setKubeConfig
 helm_mode=$1
 helm_cmd="helm install"
 yaml_dir=""
+namespace="$(getImagesConf 'k8s' 'namespace')"
+
+if [ -z "${namespace}" ];then
+  sendLog "${namespace} is null! please check images.cfg!" 3
+  exit 1
+fi
 
 if [ "${helm_mode}" == "helm_upgrade" ]; then
   helm_cmd="helm_upgrade"
@@ -31,7 +37,7 @@ conf_cmd="\
 --set server.ingress.enabled=false \
 --set server.retention=$(getImagesConf 'prometheus' 'time') \
 --set server.retention_size=$(getImagesConf 'prometheus' 'size') \
-$(getServicePrefix)-$service_name --namespace $(getImagesConf 'k8s' 'namespace') ${yaml_dir} charts/$service_name"
+$service_name --namespace ${namespace} ${yaml_dir} artifact/$service_name"
 
 if eval "$helm_cmd $conf_cmd"; then
   sendLog "Do $helm_cmd $service_name successful!" 1 g
@@ -41,5 +47,5 @@ else
 fi
 
 if [ "${helm_mode}" == "yaml_apply" ]; then
-  yamlApply "$service_name"
+  yamlApply "$service_name"  "${namespace}"
 fi

@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.prefix_name }}-{{ .Chart.Name }}
+  labels:
+    {{- include "java.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "java.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "java.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "java.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MYSQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: {{ .Chart.Name }}-secret
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ .Chart.Name }}-secret
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: redis_password
+                  name: {{ .Chart.Name }}-secret
+            - name: REDIS_ENABLED
+              value: "{{ .Values.global.db.REDIS_ENABLED }}"
+            - name: DBDriver
+              value: {{ .Values.global.db.DBDriver }}
+            - name: Dialect
+              value: {{ .Values.global.db.Dialect }}
+            - name: SQL_DIR
+              value: {{ .Values.global.db.SQL_DIR }}
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port.http }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.service.port.grpc }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: health
+              port: {{ .Values.service.port.http }}
+            initialDelaySeconds: 300
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: version
+              port: {{ .Values.service.port.http }}
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

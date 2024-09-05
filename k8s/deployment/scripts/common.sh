@@ -38,10 +38,11 @@ function getImagesPart() {
 }
 
 function yamlApply() {
-  local service=$1 yaml
+  local service=$1 yaml namespace=$2
+  sendLog "yaml apply files in ${namespace}"
   for yaml in yaml/"$service"/templates/*.yaml; do
     [[ -e $yaml ]] || break
-    if ! kubectl apply -f "$yaml"; then
+    if ! kubectl apply -f "$yaml" -n "${namespace}"; then
       sendLog "kubectl apply $service with yaml failed"
       exit 1
     fi
@@ -51,7 +52,7 @@ function yamlApply() {
 }
 
 function yamlDelete() {
-  local service=$1 yaml stats=0
+  local service=$1 yaml stats=0 namespace=$2
   if [ ! -d yaml/"$service"/templates ]; then
     sendLog "no such file : yaml/$service/templates" 3
     exit 1
@@ -61,7 +62,7 @@ function yamlDelete() {
     if [[ "${yaml##*/}" == *"pvc.yaml"* ]]; then
       sendLog "pvc 文件暂时不删除" 0
     else
-      if ! kubectl delete -f "$yaml"; then
+      if ! kubectl delete -f "$yaml" -n "${namespace}" ; then
         sendLog "删除yaml: ${yaml} 失败" 3
         stats=1
       fi
