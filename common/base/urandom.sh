@@ -38,3 +38,10 @@ function urandomStr() {
   # 输出结果
   echo "$str"
 }
+
+# 再给定的数组长度中，随机给一个Index
+function urandomIndex() {
+  # shellcheck disable=SC2119
+  local index="${1:-1}" num=$(urandomInt)
+  echo $((num % index))
+}
