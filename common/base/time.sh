@@ -6,5 +6,8 @@ function now_time_long() {
     date +%s%N
 }
 
+function now_time_short() {
+    date +%s
+}
 
 
