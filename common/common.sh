@@ -59,6 +59,7 @@ function source_all_base_function() {
   source urandom.sh
   source communication.sh
   source process.sh
+  source signal.sh
   popd &> /dev/null || return 1
 }
 

@@ -117,7 +117,7 @@ function checkCfgFile() {
   local filename="$1"
   # 判断是否为绝对路径
   if [[ $filename == /* ]]; then
-    sendLog "文件： $filename 为据对路径，不进行查找。 " &>/dev/null
+    sendLog "文件： $filename 为绝对路径，不进行查找。 " 0  &>/dev/null
     echo "$filename"
     return 0
   fi

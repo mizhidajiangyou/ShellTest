@@ -45,3 +45,44 @@ function urandomIndex() {
   local index="${1:-1}" num=$(urandomInt 3)
   echo $((num % index))
 }
+
+# 数组中随便拿一个出来
+function urandomInArray() {
+  # shellcheck disable=SC2206
+  local arr=($*)
+  echo "${arr[$(urandomIndex ${#arr[*]})]}"
+}
+
+# 生成随机json数组
+# e.g. urandomJsonArray "key" "name" "value"
+function urandomJsonArray() {
+  local key=${1:-urandom} value URANDOM_NUM i j array
+  shift 1
+  # shellcheck disable=SC2206
+  value=($*)
+  if [ -z "$URANDOM_NUM" ]; then
+    URANDOM_NUM=$(urandomInt 1)
+  fi
+  if [ "${#value[*]}" -eq 0 ]; then
+    sendLog "run fuc :\`urandomJsonArray\` value is empty!" 0 &>/dev/null
+    echo "[{\"${key}\":\"null\"}]"
+    return 1
+  fi
+  # shellcheck disable=SC2004
+  for ((i = 1; i <= $URANDOM_NUM; i++)); do
+    array+="{"
+    for j in ${value[*]}; do
+      array+="\"${j}\":\"$(urandomStr 8)\""
+      if [ "${j}" != "${value[${#value[*]} - 1]}" ]; then
+        array+=","
+      fi
+    done
+    array+="}"
+    if [ "${i}" != "${URANDOM_NUM}" ]; then
+      array+=","
+    fi
+  done
+
+  echo "[$array]"
+
+}

@@ -5,11 +5,13 @@ readConfig "${SHELL_HOME}http/http.cfg"
 # 部分国产系统export无法生效，采用直接导入的方式
 # CURL_OPTS="-s  -w '{\"time_total\": \"%{time_total}\", \"result\": \"%{http_code}\" }' --max-time ${HTTP_MAX_TIME} --retry-delay ${HTTP_RETRY_DELAY} --retry ${HTTP_RETRY} --retry-max-time ${HTTP_RETRY_MAX_TIME}"
 
-
 # 类似curl用法
 function doHttpRequest {
   local options=("$@")
-  local url method body headers action file response cul_option
+  local url method body headers action file response cul_option curl_command error
+  # 初始化错误文件
+  error=$(mktemp)
+
   if [ "${#options[@]}" -eq 0 ]; then
     sendLog "Missing options" 3 &>/dev/null
     return 1
@@ -104,23 +106,30 @@ function doHttpRequest {
     cul_option+=("--data-binary" "@$file")
   fi
 
+  curl_command="curl \"${cul_option[*]}\" -s --max-time ${HTTP_MAX_TIME} --retry-delay ${HTTP_RETRY_DELAY} --retry ${HTTP_RETRY}  $url"
+  sendLog "now do : $curl_command" 0 &>/dev/null
+
   # send HTTP request
-  response=$(curl "${cul_option[@]}" -s --max-time "${HTTP_MAX_TIME}" --retry-delay "${HTTP_RETRY_DELAY}" --retry "${HTTP_RETRY}"  "$url" 2>/dev/null)
+  response=$(curl "${cul_option[@]}" -s --max-time "${HTTP_MAX_TIME}" --retry-delay "${HTTP_RETRY_DELAY}" --retry "${HTTP_RETRY}" "$url" 2>"$error")
+  # 下面这种方式不行，待优化
+  # response=$("$curl_command" 2>"$error")
 
   # log request and response
   # sendLog "http_request" "url=$url method=$method body=$body headers=$headers action=$action file=$file  error=$error" 0
 
   # check curl command exit code
-  # shellcheck disable=SC2181
-  if [[ $? -ne 0 ]]; then
-    sendLog "curl command failed" 3 &>/dev/null
+  if [[ -n $(<"$error") ]]; then
+    sendLog "curl command failed! back: $(<"$error")" 3 &>/dev/null
+    rm -rf "$error"
     return 1
   else
+    sendLog "curl back: ${response}" 0 &>/dev/null
+    rm -rf "$error"
     echo "$response"
     return 0
   fi
-}
 
+}
 
 #e.g.
 #  local url=$1 token=$2 data=$3
