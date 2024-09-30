@@ -45,7 +45,7 @@ function source_all_base_function() {
     echo "请先配置变量SHELL_HOME。"
     exit 1
   fi
-  # 不能用for导入，否则影响打包。
+  # 不能用for导入，否则影响打包，待优化
   pushd "${SHELL_HOME}"common/base &> /dev/null || return 1
   source font.sh
   source print.sh
@@ -60,6 +60,8 @@ function source_all_base_function() {
   source communication.sh
   source process.sh
   source signal.sh
+  source time.sh
+  source struct.sh
   popd &> /dev/null || return 1
 }
 

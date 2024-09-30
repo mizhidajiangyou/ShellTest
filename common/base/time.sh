@@ -10,4 +10,11 @@ function now_time_short() {
     date +%s
 }
 
+function now_time_normal() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+function now_time_sim() {
+    date '+%Y%m%d%H%M%S'
+}
 

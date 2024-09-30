@@ -22,6 +22,15 @@ function trim() {
   echo "$trimmed"
 }
 
+# 格式化function，获取函数名称
+function trimFunction() {
+  local trimmed
+  trimmed=$(trim "$1")
+  trimmed=${trimmed//\(/}
+  trimmed=${trimmed//\)/}
+  echo "$trimmed"
+}
+
 # 根据逗号分割字符串
 function splitByComma() {
   local array string=$1
@@ -43,4 +52,21 @@ function replaceString() {
 # 替换{{ xxx }}
 function replaceCompose() {
   replaceString "$1" "\{\{ $2 \}\}" "$3"
+}
+
+function checkRepeat() {
+  local my_array seen item
+  # shellcheck disable=SC2206
+  my_array=($*)
+
+  declare -A seen
+  for item in "${my_array[@]}"; do
+    if [ -n "${seen[$item]}" ]; then
+      sendLog "数组中存在相同字符串: $item" 3
+      exit 1
+    else
+      seen[$item]=1
+    fi
+  done
+
 }

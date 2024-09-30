@@ -121,6 +121,7 @@ function doHttpRequest {
   if [[ -n $(<"$error") ]]; then
     sendLog "curl command failed! back: $(<"$error")" 3 &>/dev/null
     rm -rf "$error"
+    echo "curl command failed!"
     return 1
   else
     sendLog "curl back: ${response}" 0 &>/dev/null

@@ -56,7 +56,7 @@ function urandomInArray() {
 # 生成随机json数组
 # e.g. urandomJsonArray "key" "name" "value"
 function urandomJsonArray() {
-  local key=${1:-urandom} value URANDOM_NUM i j array
+  local key=${1:-urandom} value i j array
   shift 1
   # shellcheck disable=SC2206
   value=($*)
