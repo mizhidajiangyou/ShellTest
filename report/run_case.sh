@@ -62,7 +62,7 @@ function run_test_case() {
         case_result="${success_message}"
       fi
       case_end_time=$(now_time_normal)
-      echo " {\"startTime\": \"$case_start_time\",\"endTime\": \"$case_end_time\",\"run_out\":\"$(cat "$t")\",\"result\":\"${case_result}\"}" >"${t}"
+      echo " {\"caseName\": \"$a\",\"startTime\": \"$case_start_time\",\"endTime\": \"$case_end_time\",\"run_out\":\"$(cat "$t")\",\"result\":\"${case_result}\"}" >"${t}"
     } &
     ((now_process++))
     if [ "$now_process" -ge "$max_process" ]; then

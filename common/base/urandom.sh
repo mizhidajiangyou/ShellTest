@@ -82,7 +82,6 @@ function urandomJsonArray() {
       array+=","
     fi
   done
-
   echo "[$array]"
 
 }
