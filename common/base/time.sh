@@ -39,3 +39,11 @@ function now_date_long() {
   date  "+%Y-%m-%dT%H:%M:%S.%3NZ"
 }
 
+# 时间戳转换为日期函数
+function timestamp_to_date() {
+    local timestamp=$1
+    # shellcheck disable=SC2004
+    date -d @$(($timestamp/1000)) "+%Y-%m-%d"
+}
+
+

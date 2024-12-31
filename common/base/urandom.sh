@@ -24,7 +24,7 @@ function urandomInt() {
 
   num=$(head /dev/urandom -n 10000 | tr -dc 0-9 | head -c "${ur_length}")
   # 去掉0开头的
-  awk -v a="${num}" -v b=1 'BEGIN{print a+b}'
+  awk -v a="${num}" -v b=1 'BEGIN{print a+b-b}'
 }
 
 # 随机长度的字符串
@@ -37,6 +37,13 @@ function urandomStr() {
 
   # 输出结果
   echo "$str"
+}
+
+# 随机长度的中文
+function urandomZhongwen() {
+  # shellcheck disable=SC2046
+  # shellcheck disable=SC2005
+  echo "测试"
 }
 
 # 再给定的数组长度中，随机给一个Index
