@@ -14,6 +14,10 @@ function now_time_normal() {
   date '+%Y-%m-%d %H:%M:%S'
 }
 
+function now_time_big() {
+  date '+%Y-%m-%d'
+}
+
 function now_time_sim() {
   date '+%Y%m%d%H%M%S'
 }

@@ -68,7 +68,8 @@ function urandomJsonArray() {
   # shellcheck disable=SC2206
   value=($*)
   if [ -z "$URANDOM_NUM" ]; then
-    URANDOM_NUM=$(urandomInt 1)
+    # not 0
+    URANDOM_NUM=$((1 + $(urandomInt 1) ))
   fi
   if [ "${#value[*]}" -eq 0 ]; then
     sendLog "run fuc :\`urandomJsonArray\` value is empty!" 0 &>/dev/null
