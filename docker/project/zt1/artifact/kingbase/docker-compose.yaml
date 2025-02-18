@@ -16,8 +16,8 @@ services:
       - DB_MODE=mysql
       - ENABLE_CI=no
       - NEED_START=yes
-      - DB_USER=kingbasees
-      - DB_PASSWORD=kingbasees
+      - DB_USER={{ KINGBASE_USER }}
+      - DB_PASSWORD={{ KINGBASE_PASSWD }}
     labels:
       mz-app.platform: "mz"
       mz-app.type: "system"

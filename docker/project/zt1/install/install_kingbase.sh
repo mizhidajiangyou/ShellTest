@@ -20,6 +20,9 @@ docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "PORT" "port")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "network" "NETWORK_NAME" "network_name")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "global" "PREFIX" "prefix")
+# 账户密码
+docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "KINGBASE_USER" "user_name")
+docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "KINGBASE_PASSWD" "passwd")
 # 存储类创建
 mkdir -p ./artifact/${service_name}/data && chmod 777 ./artifact/${service_name}/data
 
