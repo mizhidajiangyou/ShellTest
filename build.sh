@@ -50,5 +50,5 @@ function main() {
     shc -r -f "${build_result_file_name}"
   fi
 }
-
+set -x
 main "$1" "$2"

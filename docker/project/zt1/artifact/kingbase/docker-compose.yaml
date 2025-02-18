@@ -11,8 +11,13 @@ services:
     container_name: {{ NAME }}
     environment:
       - TZ=Asia/Shanghai
-      - SYSTEM_USER: kingbase
-      - SYSTEM_PWD: king
+      - SYSTEM_USER=kingbase
+      - SYSTEM_PWD=king
+      - DB_MODE=mysql
+      - ENABLE_CI=no
+      - NEED_START=yes
+      - DB_USER=kingbasees
+      - DB_PASSWORD=kingbasees
     labels:
       mz-app.platform: "mz"
       mz-app.type: "system"
