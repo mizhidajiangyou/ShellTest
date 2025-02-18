@@ -24,8 +24,9 @@ docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "KINGBASE_USER" "user_name")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "KINGBASE_PASSWD" "passwd")
 # 存储类创建
-mkdir -p ./artifact/${service_name}/data && chmod 777 ./artifact/${service_name}/data
-
+mkdir -p ./artifact/${service_name}/data
+sudo chown -R 1000:1000 ./artifact/${service_name}/data
+chmod 777 ./artifact/${service_name}/data
 # 写入数据
 echo "${docker_compose_production}" >./artifact/${service_name}/docker-compose-production.yaml
 
