@@ -3,17 +3,18 @@
 
 source scripts/common.sh
 
-function get_pkg() {
-  local new_version  used
-
+function get_network_pkg() {
+  local new_version used
+  local base_url="https://cdn.mysql.com//Downloads/"
+  local path_url="MySQL-8.0/"
+  # local framework_name="x86_64/"
+  local url="$base_url$path_url"
   new_version=$(curl -s 'https://dev.mysql.com/downloads/mysql/?tpl=platform&os=2&version=8.0&osva=' | grep -E 'mysql-8.0.[0-9]+*' | grep -v td | awk -F= '{print substr($4, 1, length($4)-2)}')
   echo "当前可以自动下载的mysql版本为:${new_version}"
   # shellcheck disable=SC2162
   read -p "请输入需要安装的包名: " used
   wget "${url}${used}"
-  # check_file_can_download $base_url$path_url
   package_name=${used}
-
 }
 
 function start_service() {
@@ -51,17 +52,19 @@ EOF
 }
 
 function install_package() {
-  print_color "将要解压的包文件为：${package_name}"
-  tar -zxvf "${package_name}"
-  cd docker || exit 1
+  local package_name=$1
+  sendLog "将要解压的包文件为：${package_name}"
+  tar -xvf "${package_name}" -C "${install_path}"
+  cd "${install_path}" || exit 1
+  ls |grep "${service_name}"
   if ! ./docker --version &>/dev/null; then
     print_color "docker 命令执行失败！" r
     exit 1
   else
-#    cp ./* /usr/bin
+    #    cp ./* /usr/bin
     sudo bin/mysqld --initialize --user=mysql --basedir=/usr/local/mysql-mz --datadir=/usr/local/mysql-mz/data --defaults-file=/usr/local/mysql-mz/my.cnf
     # 后端启动
-    sudo bin/mysqld_safe --user=mysql  --datadir=/root/services/mysql &
+    sudo bin/mysqld_safe --user=mysql --datadir=/root/services/mysql &
   fi
   start_service
 }
@@ -82,32 +85,24 @@ EOF
 
 }
 
-function init_env() {
-    echo "init"
-}
-
 
 function main() {
-
-
-  local base_url="https://cdn.mysql.com//Downloads/"
-  local path_url="MySQL-8.0/"
-  # local framework_name="x86_64/"
-  local package_name
-  local url="$base_url$path_url"
-  # shellcheck disable=SC2162
-  read -p "是否使用本地包安装?y/n" user_local_pkg
-  if [ "$user_local_pkg" == "y" ]; then
-    # shellcheck disable=SC2162
-    read -p "请把包放在当前目录下，并输入名称。" package_name
-    if [ ! -f "$package_name" ]; then
-      print_color "未找到输入的包名称！" r
-      exit 1
-    fi
-    install_package
+  service_name="mysql"
+  # 是否联网安装判断
+  # shellcheck disable=SC2155
+  local network_enable="$(configParser "global" "network" "images.cfg")"
+  # 安装目录设置
+  # shellcheck disable=SC2155
+  install_path="$(configParser "storage" "install_path" "images.cfg")"
+  # 确保目录
+  checkDir "${install_path}" force
+  package_name
+  if ${network_enable}; then
+    get_network_pkg
+    install_package "${package_name}"
   else
-    get_pkg
-    install_package
+    package_name="artifact/${service_name}/$(configParser "global" "network" "images.cfg")"
+    install_package "$package_name"
   fi
 
 }

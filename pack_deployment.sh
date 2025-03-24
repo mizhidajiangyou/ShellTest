@@ -26,7 +26,7 @@ function init_install_file() {
     exit 1
   else
     rm -rf "${build_type}"/deployment/"${build_type}" "${build_type}"/deployment/install
-    cp -rf "${build_type}"/project/"$project"/"${artifact}" "${build_type}"/project/"$project"/install "${build_type}"/deployment
+    cp -rf "${build_type}"/project/"$project"/* "${build_type}"/deployment
   fi
 }
 

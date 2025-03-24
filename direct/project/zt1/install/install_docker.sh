@@ -3,27 +3,7 @@
 
 source scripts/common.sh
 
-function get_docker_pkg() {
-  local new_docker_version ts used_version
-
-  new_docker_version=$(curl -s "$docker_url" | grep -Eo 'docker-[0-9]+\.[0-9]+\.[0-9]+\.tgz' | sort -Vur | head -n 1)
-  print_color "当前可以安装的最新版本docker为:${new_docker_version}" b
-  # shellcheck disable=SC2162
-  read -p "是否使用最新版本安装？y/n  " ts
-  if [ "$ts" == "y" ]; then
-    wget "${docker_url}${new_docker_version}"
-    docker_package_name=${new_docker_version}
-  else
-    # shellcheck disable=SC2162
-    read -p "请输入需要安装的版本: " used_version
-    wget "${docker_url}docker-${used_version}.tgz"
-    # check_file_can_download $base_url$path_url
-    docker_package_name=docker-${used_version}.tgz
-  fi
-
-}
-
-function start_docker_service() {
+function start_service() {
   if [ -f /lib/systemd/system/docker.service ]; then
     echo '存在文件/lib/systemd/system/docker.service 不进行文件生成。'
   else
@@ -77,20 +57,18 @@ OOMScoreAdjust=-500
 WantedBy=multi-user.target
 EOF
   fi
-  # shellcheck disable=SC2162
-  read -p "是否生成docker默认配置项？ y/n " docker_config_enable
-  if [ "${docker_config_enable}" == "y" ]; then
-    # shellcheck disable=SC2162
-    read -p "输入docker存放数据路径，默认为/data ." docker_data_path
-    config_docker "${docker_data_path}"
-  fi
+
+  config_server "${data_path}"
+
   systemctl enable docker
   systemctl start docker
 }
 
-function install_docker() {
-  print_color "将要解压的包文件为：${docker_package_name}"
-  tar -zxvf "${docker_package_name}"
+function install_package() {
+  print_color "将要解压的包文件为：${package_name}"
+  tar -xvf "${package_name}" -C "${install_path}"
+  cd "${install_path}" || exit 1
+  ls |grep "${service_name}"
   cd docker || exit 1
   if ! ./docker --version &>/dev/null; then
     print_color "docker 命令执行失败！" r
@@ -98,11 +76,11 @@ function install_docker() {
   else
     cp ./* /usr/bin
   fi
-  start_docker_service
+  start_service
 }
 
-function config_docker() {
-  local docker_data_root_path=${1:-/data}
+function config_server() {
+  local docker_data_root_path=${1:-/data/docker_data}
   if [ ! -f /etc/docker/daemon.json ]; then
     mkdir -p /etc/docker/
     cat >"/etc/docker/daemon.json" <<EOF
@@ -117,32 +95,42 @@ EOF
 
 }
 
-function main() {
-
-
+function get_network_pkg() {
+  local new_version used
   local base_url="https://mirrors.aliyun.com/docker-ce/"
   local path_url="/linux/static/stable/"
   local framework_name="x86_64/"
-  local docker_package_name
-  if [[ ! $(uname -m) =~ "x86" ]]; then
-    framework_name='aarch64/'
-  fi
-  local docker_url="$base_url$path_url$framework_name"
+  local url="$base_url$path_url$framework_name"
+  new_version=$(curl -s "$url" | grep -Eo 'docker-[0-9]+\.[0-9]+\.[0-9]+\.tgz' | sort -Vur | head -n 1)
+  echo "当前可以自动下载的mysql版本为:${new_version}"
   # shellcheck disable=SC2162
-  read -p "是否使用本地包安装?y/n" user_local_pkg
-  if [ "$user_local_pkg" == "y" ]; then
-    # shellcheck disable=SC2162
-    read -p "请把包放在当前目录下，并输入docker包名称。" docker_package_name
-    if [ ! -f "$docker_package_name" ]; then
-      print_color "未找到输入的包名称！" r
-      exit 1
-    fi
-    install_docker
-  else
-    get_docker_pkg
-    install_docker
-  fi
+  read -p "请输入需要安装的包名: " used
+  wget "${url}${used}"
+  package_name=${used}
+}
 
+function main() {
+
+  service_name="docker"
+  # 是否联网安装判断
+  # shellcheck disable=SC2155
+  local network_enable="$(configParser "global" "network" "images.cfg")"
+  # 安装目录设置
+  # shellcheck disable=SC2155
+  install_path="$(configParser "storage" "install_path" "images.cfg")"
+  # 数据目录
+  data_path="$(configParser "docker" "data_path" "images.cfg")"
+  # 确保目录
+  checkDir "${install_path}" force
+  checkDir "${data_path}" force
+  package_name="$(configParser "$service_name" "image" "images.cfg")"
+  if ${network_enable}; then
+    get_network_pkg
+    install_package "${package_name}"
+  else
+    package_name="artifact/${service_name}/${package_name}"
+    install_package "$package_name"
+  fi
 }
 
 main
