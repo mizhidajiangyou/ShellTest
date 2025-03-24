@@ -26,6 +26,11 @@ function init_install_file() {
     exit 1
   else
     rm -rf "${build_type}"/deployment/"${build_type}" "${build_type}"/deployment/install
+    if [ "${framework}" = "arm64" ]; then
+      cp -rf "${build_type}"/project/"$project"/images.cfg-arm64 "${build_type}"/project/"$project"/images.cfg
+    else
+      cp -rf "${build_type}"/project/"$project"/images.cfg-x86 "${build_type}"/project/"$project"/images.cfg
+    fi
     cp -rf "${build_type}"/project/"$project"/* "${build_type}"/deployment
   fi
 }

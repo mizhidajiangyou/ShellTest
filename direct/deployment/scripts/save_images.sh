@@ -5,13 +5,12 @@ source scripts/common.sh
 function do_save_install_images() {
   local ser url
   ser=$1
-  url="$(configParser "${ser}" "image" "images.cfg")"
+  url="$(configParser "${ser}" "url" "images.cfg")/$(configParser "${ser}" "image" "images.cfg")"
   sendLog "Try save: $url" 0
-  if docker pull "$url" &>/dev/null; then
-    docker save "$url" -o images/install/"${ser}"-"${version}"-"${framework}".tar
+  if curl -s "$url" -o images/install/"${ser}"-"${version}"-"${framework}".tar &>/dev/null; then
     sendLog "Save: $url successful" 0 g
   else
-    sendLog "Docker pull $url failed." 3
+    sendLog "save  $url failed." 3
     exit 1
   fi
 }
