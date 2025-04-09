@@ -29,7 +29,10 @@ install.%: ## 安装指定的目录
 	@./install/install_$(bin).sh
 	@cd artifact/$(bin) && ./start.sh
 
-
+.PHONY: conf.%
+conf.%: ## 安装指定的目录
+	$(eval bin := $(word 1,$(subst ., ,$*)))
+	@./scripts/conf.sh $(bin)
 
 .PHONY: uninstall
 uninstall: ## 进行一键卸载

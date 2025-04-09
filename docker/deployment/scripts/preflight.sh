@@ -28,6 +28,7 @@ function check_user() {
 
 function check_command_ok() {
   checkCommand "docker"
+  checkCommand "netstat"
 }
 
 function check_port_ok() {

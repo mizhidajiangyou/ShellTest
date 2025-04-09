@@ -120,7 +120,26 @@ function stopDocker() {
 function cpDocker() {
   local source=$1
   local destination=$2
-  docker cp "${source}" "${destination}"
+  if docker cp "${source}" "${destination}" ;then
+    sendLog " docker cp ${source} ${destination} successful" 1
+  else
+    sendLog " docker cp ${source} ${destination} failed,use docker ps and check it!" 3
+    exit 1
+  fi
+}
+
+
+
+function run_and_cp_from_docker() {
+  local name=$1
+  local image=$2
+  local source=$3
+  local destination=$4
+  name="${name}-$(urandomStr 5)"
+  runDocker "$name" "$image"
+  cpDocker "$name:$source" "$destination"
+  stopDocker "$name"
+
 }
 
 function checkDockerExist() {
