@@ -47,6 +47,24 @@ function check_port_ok() {
 
 }
 
+function check_ip_config() {
+  local default_network ip ip_list
+  default_network=$(configParser network network images.cfg)
+  if [ "${default_network}" == "eth0" ]; then
+    ip_list=$(ip a | grep 'state UP' | grep -v noqueue | awk '{gsub(":", "", $2);print $2}')
+    # 当前可用的网卡
+    ip=$(ifconfig "${ip_list[0]}" | grep broadcast | awk 'NR=1{print $2}')
+    sendLog "将使用默认网卡${ip_list[0]}:地址$ip"
+    configParser network local_ip images.cfg "$ip"
+    sleep 1
+  else
+    ip=$(configParser network local_ip images.cfg)
+    sendLog "已经配置过网卡了，将使用网卡${default_network}的ip:${ip}"
+    sleep 1
+  fi
+
+}
+
 function main() {
   check_user
   check_command_ok
