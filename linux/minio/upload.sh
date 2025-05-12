@@ -28,13 +28,13 @@ if ! mc ls "$MINIO_ALIAS" | grep -q "$BUCKET_NAME"; then
 fi
 
 # 上传文件到指定目录
-echo "上传文件 $FILE_PATH 到 $MINIO_ALIAS/$BUCKET_NAME/$$TARGET_DIR"
+echo "上传文件 $FILE_PATH 到 $MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR"
 
 # 验证上传结果
 if mc cp "$FILE_PATH" "$MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR"; then
     echo "文件上传成功！"
     echo "验证文件是否存在"
-    if  mc ls "$MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR" | grep -q "$(basename $FILE_PATH)"; then
+    if  mc ls "$MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR" | grep -q "$(basename "$FILE_PATH")"; then
         echo "验证通过：文件存在于目标路径:$MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR"
     else
         echo "警告：文件未出现在目标路径:$MINIO_ALIAS/$BUCKET_NAME/$TARGET_DIR !"
