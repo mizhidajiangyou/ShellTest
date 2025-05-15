@@ -1,0 +1,43 @@
+version: '3.4'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    restart: always
+    privileged: true
+    container_name: {{ NAME }}
+    environment:
+      - TZ=Asia/Shanghai
+      - MINIO_ROOT_USER={{ ACCESSKEY }}
+      - MINIO_ROOT_PASSWORD={{ SECRETKEY }}
+      - MINIO_BROWSER=on
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - BITNAMI_DEBUG=false
+      - MINIO_DATA_DIR=/data
+      - MINIO_CONSOLE_PORT_NUMBER=9001
+    hostname: {{ NAME }}
+    volumes:
+      - ./data:/data
+    ports:
+      - "{{ PORT }}:9000/tcp"
+      - "{{ PORT_CONSOLE }}:9001/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: curl  --fail http://localhost:9000/minio/health/live || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - {{ NETWORK_NAME }}
+networks:
+  {{ NETWORK_NAME }}:
+    external: true

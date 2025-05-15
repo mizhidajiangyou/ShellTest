@@ -1,0 +1,39 @@
+version: '3.4'
+services:
+  {{ NAME }}:
+    image: {{ IMAGE }}
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ CPU }}"
+          memory: "{{ MEMORY }}"
+    command:
+      - "--auth"
+    restart: always
+    privileged: true
+    container_name: {{ NAME }}
+    environment:
+      - TZ=Asia/Shanghai
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD{{ PASSWD }}
+    hostname: {{ NAME }}
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "{{ PORT }}:27017/tcp"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: mongo --eval 'db.adminCommand({ping:1})' --quiet |grep -q 1  || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
+    networks:
+      - {{ NETWORK_NAME }}
+networks:
+  {{ NETWORK_NAME }}:
+    external: true
