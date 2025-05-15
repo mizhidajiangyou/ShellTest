@@ -125,9 +125,24 @@ function cpDocker() {
 
 function checkDockerExist() {
   if docker ps -a | grep -q "$1"; then
-    sendLog "docker $1 is running" 3 &> /dev/null
+    sendLog "docker $1 is running" 3 &>/dev/null
     return 1
   else
     return 0
   fi
+}
+
+function runCpFromDocker() {
+  local name=$1
+  local image=$2
+  local source=$3
+  local destination=$4
+  name="${name}-$(urandomStr 5)"
+  runDocker "$name" "$image"
+  cpDocker "$name:$source" "$destination"
+  stopDocker "$name"
+  if ! checkDockerExist "$name"; then
+    return 1
+  fi
+
 }
