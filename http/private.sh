@@ -86,7 +86,7 @@ function doHttpRequest {
   fi
 
   # set request body
-  if [[ "$method" =~ ^(POST|PUT|PATCH)$ ]]; then
+  if [[ "$method" =~ ^(POST|DELETE|PUT|PATCH)$ ]]; then
     cul_option+=("-d" "$body")
     cul_option+=("-X" "$method")
   fi
