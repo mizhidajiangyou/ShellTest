@@ -2,7 +2,7 @@
 
 source scripts/common.sh
 
-service_name="jenkins"
+service_name="registry"
 
 
 sendLog "Start to create $service_name/docker-compose-production.yml ..." 1
@@ -18,7 +18,6 @@ docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "MEMORY" "memory")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "NAME" "name")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "PORT" "port")
-docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "JNLP_PORT" "jnlp_port")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "network" "NETWORK_NAME" "network_name")
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "global" "PREFIX" "prefix")
 # 存储类创建

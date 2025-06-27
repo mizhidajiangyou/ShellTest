@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.4'
 services:
   {{ NAME }}:
     image: {{ IMAGE }}
@@ -9,7 +9,6 @@ services:
           memory: "{{ MEMORY }}"
     restart: always
     container_name: {{ NAME }}
-    user: root
     environment:
       - TZ=Asia/Shanghai
     labels:
@@ -19,17 +18,18 @@ services:
       mz-app.metric: "{{ PORT }}"
     hostname: {{ NAME }}
     volumes:
-      - ./data:/var/jenkins_home
+      - ./data:/var/lib/registry
+      - ./config/config.yml:/etc/distribution/config.yml
+      - ./config/.pass:/etc/distribution/.passwd
     ports:
-      - "{{ PORT }}:8080/tcp"
-      - "{{ JNLP_PORT }}:5000/tcp"
+      - "{{ PORT }}:5000/tcp"
     logging:
       driver: "json-file"
       options:
         max-size: "5M"
         max-file: "10"
     healthcheck:
-      test: curl -f -s -u "admin:$(cat /var/jenkins_home/secrets/initialAdminPassword)"   http://localhost:8080  || exit 1
+      test: wget --spider  127.0.0.1:5000/v2  || exit 1
       interval: 10s
       retries: 5
       timeout: 10s
