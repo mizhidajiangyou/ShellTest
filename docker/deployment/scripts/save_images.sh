@@ -18,9 +18,10 @@ function do_save_install_images() {
 
 function do_save_other_images() {
   local images_name images_url images_list
+  sendLog "start to save other_images" 0
   images_list=$(getConfigSection other_images images.cfg)
   for images_name in ${images_list[*]}; do
-    images_url="$(configParser "other_images" "$images_name" "images.cfg")"
+    images_url="$(configParser "other_images" "$images_name" "images.cfg" | awk '!/^#/ && $0 != ""' )"
     sendLog "Try save $images_url" 0
     if docker pull "${images_url}" &>/dev/null; then
       docker save "${images_url}" -o images/other/"${images_name}"-"${version}"-"${framework}".tar
