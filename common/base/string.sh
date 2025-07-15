@@ -17,9 +17,7 @@ function toUpper() {
 
 # 格式化
 function trim() {
-  local trimmed=${1%% }
-  local trimmed=${trimmed## }
-  echo "$trimmed"
+  echo "$1" | awk '{$1=$1};1'
 }
 
 # 格式化function，获取函数名称
