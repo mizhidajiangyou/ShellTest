@@ -132,7 +132,7 @@ function checkCfgFile() {
   for ((i = 0; i <= layers; i++)); do
     # 检查当前目录是否存在指定文件
     if [ -f "$current_dir/$filename" ]; then
-      sendLog "匹配到文件： $current_dir/$filename" &>/dev/null
+      sendLog "匹配到文件： $current_dir/$filename" 0 &>/dev/null
       echo "$current_dir/$filename"
       return 0
     else

@@ -1,0 +1,1 @@
+docker ps | awk 'NR >1 {print $2}' | xargs -I {} sh -c 'docker save {} -o $(echo {} | tr -d :/).tar'
