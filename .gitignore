@@ -5,3 +5,5 @@
 /global.cfg
 /test
 /http/dj/
+/k8s/deployment/images.cfg
+/k8s/deployment/global.cfg
