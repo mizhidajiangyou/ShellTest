@@ -150,3 +150,21 @@ function checkDockerExist() {
     return 0
   fi
 }
+
+
+
+function check_service_config() {
+  local service_name=${1:-mysql}
+  if [ ! -f ./artifact/"${service_name}"/.config_init ]; then
+    sendLog "no such file:./artifact/${service_name}/.config_init ,start to copy from docker images."
+    if ! ./scripts/conf.sh "${service_name}"; then
+      sendLog "copy error!" 3
+      return 1
+    fi
+    touch ./artifact/"${service_name}"/.config_init
+    sendLog "copy fi"
+  else
+    sendLog "skip copy."
+  fi
+
+}
