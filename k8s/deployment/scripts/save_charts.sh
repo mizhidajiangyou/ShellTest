@@ -9,7 +9,7 @@ function helm_pull_from_image() {
   local helm_version="" base_dir="${CHART_SAVE_DIR}"
   local oci_repo="oci://${full_image%:*}"
 
-  mkdir -p ${base_dir}
+  mkdir -p "${base_dir}"
   sendLog "待处理镜像地址：${full_image}" 0 &>/dev/null
 
   if [ "${image_tag}" = "${full_image}" ]; then
