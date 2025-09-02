@@ -11,6 +11,14 @@ function setKubeConfig() {
   fi
 }
 
+function setNodeIP() {
+  local node_ip
+  if [ "$(getImagesConf k8s custom_node_ip)" != "true" ];then
+    node_ip=$(kubectl get nodes -o wide | awk '/Ready/{print $6}' | head -n 1)
+    configParser k8s node_ip images.cfg "$node_ip"
+  fi
+}
+
 function getImagesConf() {
   local section=$1
   local value=$2
@@ -97,3 +105,5 @@ function pvcDelete() {
   done
 
 }
+
+setKubeConfig
