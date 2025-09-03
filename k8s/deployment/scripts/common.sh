@@ -106,4 +106,59 @@ function pvcDelete() {
 
 }
 
+
+# 返回预期的pod-就绪的pod
+function check_service_num() {
+  local service=${1:base-server} namespace
+  namespace="$(getImagesConf 'k8s' 'namespace')"
+  kubectl get pods -n "${namespace}" | grep "${service}" | grep Running | awk -v num="$(getImagesConf "$service" replica_count)" '
+  BEGIN { sum_left=0; sum_right=0 }
+  {
+      split($2, arr, "/");
+      sum_left += arr[1];
+      sum_right += arr[2]
+  }
+  END {
+      if (sum_left == sum_right && sum_left == num) {
+          print "true"
+      } else {
+          print  num - sum_left
+      }
+  }'
+}
+
+function check_service_health() {
+  local service=${1:base-server} retry_count result=0
+  MAX_RETRIES=$(configParser "global" "retry_num" global.cfg)
+  RETRY_INTERVAL=$(configParser "global" "sleep_time" global.cfg)
+
+  retry_count=0
+  if [ -z "$service" ]; then
+      sendLog "错误：未设置service变量" 3
+      exit 1
+  fi
+  sendLog "即将校验${service} 部署状态是否正常。"
+  while [ $retry_count -lt "$MAX_RETRIES" ]; do
+
+    result=$(check_service_num "${service}")
+    if [ "$result" = "true" ]; then
+      sendLog "${service}状态正常" 1 g
+      return 0
+    fi
+
+    # 未成功，输出当前结果并等待重试
+    sendLog "第 $((retry_count + 1)) 次检查${service}是否就绪未通过，存在${result}个服务未就绪，将在 $RETRY_INTERVAL 秒后重试" 1
+    retry_count=$((retry_count + 1))
+
+    if [ $retry_count -lt "$MAX_RETRIES" ]; then
+      sleep "$RETRY_INTERVAL"
+    fi
+  done
+
+  sendLog "达到最大重试次数 ($MAX_RETRIES 次)，服务${service}检查未通过" 3
+  exit 1
+
+}
+
+
 setKubeConfig
