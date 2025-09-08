@@ -120,15 +120,13 @@ function stopDocker() {
 function cpDocker() {
   local source=$1
   local destination=$2
-  if docker cp "${source}" "${destination}" ;then
+  if docker cp "${source}" "${destination}"; then
     sendLog " docker cp ${source} ${destination} successful" 1
   else
     sendLog " docker cp ${source} ${destination} failed,use docker ps and check it!" 3
     exit 1
   fi
 }
-
-
 
 function run_and_cp_from_docker() {
   local name=$1
@@ -144,14 +142,12 @@ function run_and_cp_from_docker() {
 
 function checkDockerExist() {
   if docker ps -a | grep -q "$1"; then
-    sendLog "docker $1 is running" 3 &> /dev/null
+    sendLog "docker $1 is running" 3 &>/dev/null
     return 1
   else
     return 0
   fi
 }
-
-
 
 function check_service_config() {
   local service_name=${1:-mysql}
@@ -166,5 +162,17 @@ function check_service_config() {
   else
     sendLog "skip copy."
   fi
+
+}
+
+function get_install_name() {
+
+  local input_str="$1"
+
+  echo "$input_str" | awk '
+    match($0, /.*\/install_(.*)\.sh$/, arr) {
+        print arr[1]
+    }
+'
 
 }
