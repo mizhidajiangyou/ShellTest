@@ -170,9 +170,11 @@ function get_install_name() {
   local input_str="$1"
 
   echo "$input_str" | awk '
-    match($0, /.*\/install_(.*)\.sh$/, arr) {
-        print arr[1]
+    /.*\/install_(.*)\.sh$/ {
+      sub(/.*install_/, "", $0)
+      sub(/\.sh$/, "", $0)
+      print $0
     }
-'
+  '
 
 }
