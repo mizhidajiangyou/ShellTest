@@ -85,11 +85,6 @@ function doHttpRequest {
     method="GET"
   fi
 
-  # set request body
-  if [[ "$method" =~ ^(POST|DELETE|PUT|PATCH)$ ]]; then
-    cul_option+=("-X" "$method")
-  fi
-
   # set request headers
   if [[ ${#headers[@]} -ne 0 ]]; then
     for header in "${headers[@]}"; do
@@ -102,9 +97,13 @@ function doHttpRequest {
   if [[ "$action" == "download" ]]; then
     cul_option+=("-o" "$file")
   elif [[ "$action" == "upload" ]]; then
-    cul_option+=("-F" "file=@$file")
+    cul_option+=("-F" "$file")
   else
-    cul_option+=("-d" "$body")
+    # set request body
+    if [[ "$method" =~ ^(POST|DELETE|PUT|PATCH)$ ]]; then
+      cul_option+=("-X" "$method")
+      cul_option+=("-d" "$body")
+    fi
   fi
 
   curl_command="curl \"${cul_option[*]}\" -s --max-time ${HTTP_MAX_TIME} --retry-delay ${HTTP_RETRY_DELAY} --retry ${HTTP_RETRY}  $url"
