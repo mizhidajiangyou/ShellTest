@@ -66,7 +66,7 @@ function doHttpRequest {
       -a=* | --action=*)
         action="${option#*=}"
         ;;
-      -f=* | --file=*)
+      -f=* | -F=* | --file=*)
         file="${option#*=}"
         ;;
       *)
@@ -87,7 +87,6 @@ function doHttpRequest {
 
   # set request body
   if [[ "$method" =~ ^(POST|DELETE|PUT|PATCH)$ ]]; then
-    cul_option+=("-d" "$body")
     cul_option+=("-X" "$method")
   fi
 
@@ -103,7 +102,9 @@ function doHttpRequest {
   if [[ "$action" == "download" ]]; then
     cul_option+=("-o" "$file")
   elif [[ "$action" == "upload" ]]; then
-    cul_option+=("--data-binary" "@$file")
+    cul_option+=("-F" "file=@$file")
+  else
+    cul_option+=("-d" "$body")
   fi
 
   curl_command="curl \"${cul_option[*]}\" -s --max-time ${HTTP_MAX_TIME} --retry-delay ${HTTP_RETRY_DELAY} --retry ${HTTP_RETRY}  $url"

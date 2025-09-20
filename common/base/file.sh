@@ -202,3 +202,26 @@ function waitLock() {
   exit 1
 
 }
+
+# 生成随机 CSV 文件：参数为 文件名 字段数 行数
+function generate_csv() {
+    local csv_file=$1
+    local num_fields=$2
+    local num_rows=$3
+
+    # 生成标题行（随机字段名）
+    local headers=()
+    for ((i=1; i<=num_fields; i++)); do
+        headers+=("field_$(urandomStr 6)")
+    done
+    echo "${headers[*]}" | tr ' ' ',' > "$csv_file"
+
+    # 生成数据行（每行随机值）
+    for ((row=1; row<=num_rows; row++)); do
+        local row_data=()
+        for ((i=1; i<=num_fields; i++)); do
+            row_data+=("value_$(urandomStr 8)")
+        done
+        echo "${row_data[*]}" | tr ' ' ',' >> "$csv_file"
+    done
+}
