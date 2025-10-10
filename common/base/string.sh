@@ -68,3 +68,18 @@ function checkRepeat() {
   done
 
 }
+
+# 获取install_xxx.sh的xxx
+function get_install_name() {
+
+  local input_str="$1"
+
+  echo "$input_str" | awk '
+    /.*\/install_(.*)\.sh$/ {
+      sub(/.*install_/, "", $0)
+      sub(/\.sh$/, "", $0)
+      print $0
+    }
+  '
+
+}

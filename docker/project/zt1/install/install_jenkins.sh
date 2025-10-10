@@ -2,8 +2,7 @@
 
 source scripts/common.sh
 
-service_name="jenkins"
-
+service_name=$(get_install_name "$0")
 
 sendLog "Start to create $service_name/docker-compose-production.yml ..." 1
 
