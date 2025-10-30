@@ -33,7 +33,8 @@ function writeRestart() {
     cat >restart.sh <<EOF
 #!/bin/bash
 
-docker-compose -f docker-compose-production.yaml restart
+docker-compose -f docker-compose-production.yaml down
+docker-compose -f docker-compose-production.yaml up -d
 EOF
     chmod +x restart.sh
   fi
@@ -46,7 +47,8 @@ function writeUpdate() {
 #!/bin/bash
 
 docker-compose -f docker-compose-production.yaml pull
-docker-compose -f docker-compose-production.yaml restart
+docker-compose -f docker-compose-production.yaml down
+docker-compose -f docker-compose-production.yaml up -d
 EOF
     chmod +x update.sh
   fi

@@ -19,6 +19,8 @@ services:
       mz-app.metric: "{{ PORT }}"
     hostname: {{ NAME }}
     volumes:
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/var/jenkins_home
     ports:
       - "{{ PORT }}:8080/tcp"
