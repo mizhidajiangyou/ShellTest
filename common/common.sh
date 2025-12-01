@@ -47,6 +47,7 @@ function source_all_base_function() {
   fi
   # 不能用for导入，否则影响打包，待优化
   pushd "${SHELL_HOME}"common/base &> /dev/null || return 1
+  source k8s.sh
   source font.sh
   source print.sh
   source check.sh
@@ -123,6 +124,11 @@ use = true
 [hosts]
 # 主机地址列表
 machines = '192.168.0.1 192.168.0.2'
+
+[k8s]
+namespace = auto-
+kubeconfig = ~/.kube/config
+
 EOF
   sendLog "init file successful! please check $cfg_name and retry !" 1 g
   exit 0

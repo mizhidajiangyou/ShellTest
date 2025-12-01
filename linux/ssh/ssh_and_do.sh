@@ -8,6 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # 配置信息
+MAX_TIMEOUT=300
 ROOT_USER="root"
 ROOT_PASS="234"  # 确保与实际root密码一致
 CMD="$*"  # 接收传入的命令（支持带空格）
@@ -33,19 +34,25 @@ for server in "${SERVERS[@]}"; do
     # expect脚本（移除行内注释，避免语法错误）
     expect -c "
         spawn ssh -o StrictHostKeyChecking=no $ROOT_USER@$server
-        set timeout 30
+        set timeout $MAX_TIMEOUT
 
         expect {
+
             \"*password:*\" {
                 send \"$ROOT_PASS\r\"
                 exp_continue
             }
+
             \"$ROOT_USER@*\" {
-                send \"$CMD\r\"
+                send \"$CMD; echo 'CMD_FINISHED'\r\"
+                expect \"CMD_FINISHED\"
+
+                send \"exit\r\"
                 expect eof
             }
+
             timeout {
-                puts \"\n$server: 连接超时（网络或密码错误）\"
+                puts \"\n$server: 命令执行超时（超过$MAX_TIMEOUT秒）\"
                 exit 1
             }
             eof { exit 0 }
