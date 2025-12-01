@@ -52,6 +52,43 @@ function list_ns_resources() {
 }
 
 
+function wait_for_pods_ready() {
+    local namespace="$1"
+    local max_retries=18  # 3分钟 * 60秒 / 10秒 = 18次
+    local retry_count=0
+    local not_ready_pods
+
+    # 检查命名空间是否存在
+    if ! kubectl get ns "$namespace" > /dev/null 2>&1; then
+        sendLog "❌ 错误：命名空间 '$namespace' 不存在"
+        return 1
+    fi
+
+    sendLog "⏳ 开始轮询：等待所有Pod就绪（命名空间：$namespace）"
+    sendLog "⏰ 超时时间：3分钟（每10秒检查一次，共18次）"
+
+    while [ $retry_count -lt $max_retries ]; do
+        # 获取所有未就绪的Pod（READY列不满足 x/x 格式）
+        not_ready_pods=$(kubectl get pods -n "$namespace" \
+            | awk 'NR>1 {split($2, a, "/"); if (a[1] != a[2]) print $1}')
+
+        if [ -z "$not_ready_pods" ]; then
+            sendLog "✅ 所有Pod已就绪！命名空间 $namespace"
+            return 0
+        fi
+
+        # 输出未就绪Pod列表（每轮显示）
+        sendLog "⏳ 未就绪Pod：$not_ready_pods"
+        sendLog "⏳ 重试计数：$((retry_count+1))/$max_retries"
+        sleep 10
+        retry_count=$((retry_count + 1))
+    done
+
+    sendLog "⏰ 超时：3分钟后仍有Pod未就绪（$not_ready_pods）"
+    return 1
+}
+
+
 function setKubeConfig() {
   if [ -n "${K8S_KUBECONFIG}" ]; then
     sendLog "used kubeconfig ${K8S_KUBECONFIG}" 0
