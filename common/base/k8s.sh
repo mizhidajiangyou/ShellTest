@@ -56,16 +56,17 @@ function wait_for_pods_ready() {
     local namespace="$1"
     local max_retries=18  # 3分钟 * 60秒 / 10秒 = 18次
     local retry_count=0
+    local retry_time=10
     local not_ready_pods
 
     # 检查命名空间是否存在
     if ! kubectl get ns "$namespace" > /dev/null 2>&1; then
-        sendLog "❌ 错误：命名空间 '$namespace' 不存在"
+        sendLog "❌ 错误：命名空间 '${namespace}' 不存在"
         return 1
     fi
 
-    sendLog "⏳ 开始轮询：等待所有Pod就绪（命名空间：$namespace）"
-    sendLog "⏰ 超时时间：3分钟（每10秒检查一次，共18次）"
+    sendLog "⏳ 开始轮询：等待所有Pod就绪 (命名空间：${namespace})"
+    sendLog "⏰ 超时时间：每${retry_time}秒检查一次，共${max_retries}次."
 
     while [ $retry_count -lt $max_retries ]; do
         # 获取所有未就绪的Pod（READY列不满足 x/x 格式）
@@ -80,11 +81,11 @@ function wait_for_pods_ready() {
         # 输出未就绪Pod列表（每轮显示）
         sendLog "⏳ 未就绪Pod：$not_ready_pods"
         sendLog "⏳ 重试计数：$((retry_count+1))/$max_retries"
-        sleep 10
+        sleep "${retry_time}"
         retry_count=$((retry_count + 1))
     done
 
-    sendLog "⏰ 超时：3分钟后仍有Pod未就绪（$not_ready_pods）"
+    sendLog "⏰ 超时：${max_retries}次后仍有Pod未就绪（$not_ready_pods）"
     return 1
 }
 
