@@ -69,7 +69,7 @@ function urandomJsonArray() {
   value=($*)
   if [ -z "$URANDOM_NUM" ]; then
     # not 0
-    URANDOM_NUM=$((1 + $(urandomInt 1) ))
+    URANDOM_NUM=$((1 + $(urandomInt 1)))
   fi
   if [ "${#value[*]}" -eq 0 ]; then
     sendLog "run fuc :\`urandomJsonArray\` value is empty!" 0 &>/dev/null
@@ -91,5 +91,17 @@ function urandomJsonArray() {
     fi
   done
   echo "[$array]"
+
+}
+
+# 给入一个数字，生成小于等于他的整数
+function urandom_int_by_number() {
+
+  local max_num=${1:-3}
+
+  random_num=$((RANDOM % (max_num + 1)))
+
+  echo "$random_num"
+
 
 }
