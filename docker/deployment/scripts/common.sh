@@ -3,6 +3,14 @@
 # shellcheck disable=SC1090
 source "${SHELL_HOME}"common/common.sh
 
+function writeUsefulSH() {
+    writeStart
+    writeStop
+    writeRestart
+    writeUpdate
+    writeLog
+}
+
 function writeStart() {
   if [ ! -f start.sh ]; then
     sendLog "write start.sh" 0
@@ -26,6 +34,27 @@ EOF
     chmod +x stop.sh
   fi
 }
+
+function writeLog() {
+  if [ ! -f log.sh ]; then
+    sendLog "write log.sh" 0
+    cat >log.sh <<EOF
+#!/bin/bash
+DIR_NAME=$(basename "$PWD")
+
+
+CONTAINER=$(docker ps --format "{{.Names}}" | grep "$DIR_NAME" | head -n 1)
+
+if [ -z "$CONTAINER" ]; then
+  echo "没有找到与目录名 $DIR_NAME 匹配的容器"
+else
+  docker logs --tail 100 -f "$CONTAINER"
+fi
+EOF
+    chmod +x log.sh
+  fi
+}
+
 
 function writeRestart() {
   if [ ! -f restart.sh ]; then
