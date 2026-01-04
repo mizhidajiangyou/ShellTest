@@ -139,3 +139,20 @@ function checkStringIsIp() {
   fi
 
 }
+
+function checkUrlIsOk() {
+  local url=$1
+
+  if [ -z "$url" ]; then
+    sendLog "请提供要检查的地址，例如: $0 172.22.71.101:15541/api" 3  &>/dev/null
+    return 1
+  fi
+
+  if curl -sS  "$url" &>/dev/null; then
+    sendLog "地址可通: $url" &>/dev/null
+    return 0
+  else
+    sendLog "地址不通: $url" 3 &>/dev/null
+    return 1
+  fi
+}
