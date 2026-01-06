@@ -4,11 +4,16 @@
 source "${SHELL_HOME}"common/common.sh
 
 function writeUsefulSH() {
-    writeStart
-    writeStop
-    writeRestart
-    writeUpdate
-    writeLog
+  local write_path=${1:-artifact}
+  sendLog "start to make ${write_path}  start file"
+  pushd "${write_path}" || exit 1
+  writeStart
+  writeStop
+  writeRestart
+  writeUpdate
+  writeLog
+  popd || exit 1
+  sendLog "make ${write_path} start file end"
 }
 
 function writeStart() {
@@ -40,21 +45,12 @@ function writeLog() {
     sendLog "write log.sh" 0
     cat >log.sh <<EOF
 #!/bin/bash
-DIR_NAME=$(basename "$PWD")
 
-
-CONTAINER=$(docker ps --format "{{.Names}}" | grep "$DIR_NAME" | head -n 1)
-
-if [ -z "$CONTAINER" ]; then
-  echo "没有找到与目录名 $DIR_NAME 匹配的容器"
-else
-  docker logs --tail 100 -f "$CONTAINER"
-fi
+docker logs --tail 100 -f $(grep container_name docker-compose-production.yaml | awk '{print $2}')
 EOF
     chmod +x log.sh
   fi
 }
-
 
 function writeRestart() {
   if [ ! -f restart.sh ]; then
@@ -207,5 +203,19 @@ function get_install_name() {
       print $0
     }
   '
+
+}
+
+# 获取所有服务在配置中的端口 1服务:2ip:3端口:4容器名称
+function get_all_service_port() {
+  local server_list ser local_ip config_file prefix
+  config_file=images.cfg
+  # shellcheck disable=SC2010
+  server_list=$(ls -1 artifact | grep -vE "sql|tgz" )
+  local_ip=$(configParser "network" "local_ip" "${config_file}")
+  prefix=$(configParser "global" "prefix" "${config_file}")
+  for ser in ${server_list[*]}; do
+     printf "%s\n" "${ser}:${local_ip}:$(configParser "${ser}" "port" "${config_file}"):${prefix}-$(configParser "${ser}" "name" images.cfg)"
+  done
 
 }
