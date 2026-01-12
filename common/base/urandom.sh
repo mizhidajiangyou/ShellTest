@@ -22,7 +22,7 @@ function urandomIntInLim() {
 function urandomInt() {
   local ur_length="${1:-3}"
 
-  num=$(head /dev/urandom -n 10000 | tr -dc 0-9 | head -c "${ur_length}")
+  num=$( LC_ALL=C tr -dc '0-9' < /dev/urandom 2>/dev/null | head -c "$ur_length")
   # 去掉0开头的
   awk -v a="${num}" -v b=1 'BEGIN{print a+b-b}'
 }
