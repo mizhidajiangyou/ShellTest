@@ -20,7 +20,7 @@ function configParser() {
   local last_line key val
   last_line=$(tail -n 1 "$config_file")
   if [[ -n "$last_line" ]]; then
-      echo >> "$config_file"
+    echo >>"$config_file"
   fi
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
@@ -79,7 +79,7 @@ function readConfig() {
       varname="$(echo "${section}_${varname}" | tr '[:lower:]' '[:upper:]')"
       # 检查变量名是否已经存在
       if [[ -n "${!varname:-}" ]]; then
-        sendLog "已经存在变量: ${varname} ，将进行覆盖" 2 &> /dev/null
+        sendLog "已经存在变量: ${varname} ，将进行覆盖" 2 &>/dev/null
         # exit 1
       fi
       # 导出变量
@@ -103,7 +103,7 @@ function getConfigSection() {
   local last_line key val
   last_line=$(tail -n 1 "$config_file")
   if [[ -n "$last_line" ]]; then
-      echo >> "$config_file"
+    echo >>"$config_file"
   fi
   while read -r line; do
     if [[ ${line} == \[${section}\]* ]]; then
@@ -114,7 +114,7 @@ function getConfigSection() {
       IFS="=" read -r key val <<<"${line}"
       key=$(trim "${key}")
       val=$(trim "${val}")
-      if [[ "${type}" == "key" ]];then
+      if [[ "${type}" == "key" ]]; then
         echo "${key}"
       else
         echo "${val}"
@@ -123,3 +123,36 @@ function getConfigSection() {
   done < <(cat "${config_file}")
 }
 
+# 保留一份配置文件中的跟给入section一致的key=value
+function filter_config_sections() {
+
+  if [ $# -lt 2 ]; then
+    sendLog "Error: Usage: $0 <config_file> <section1> [section2 ...]" 3 &>/dev/null
+    return 1
+  fi
+
+  # 解析参数（加引号避免空格问题）
+  local config_file="$1"
+  shift
+  local keep_sections=("$@")
+
+  config_file=$(checkCfgFile "$config_file")
+
+  local current_section
+  while read -r line; do
+    if [[ ${line} == \[*\]* ]]; then
+      current_section=$(extract_bracket_content "${line}")
+      if string_contains "${current_section}" "${keep_sections[@]}"; then
+        find_section=true
+        # 输出section
+        echo "${line}"
+      else
+        find_section=false
+      fi
+    elif [[ ${find_section} == true ]]; then
+      echo "${line}"
+    fi
+  done < <(cat "${config_file}")
+
+  return 0
+}
