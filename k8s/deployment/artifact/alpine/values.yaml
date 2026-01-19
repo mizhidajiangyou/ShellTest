@@ -1,0 +1,102 @@
+# 容器镜像配置
+image:
+  repository: uhub.service.ucloud.cn/mzdjy/alpine
+  tag: "3.23.2"
+  pullPolicy: IfNotPresent
+
+# 安全配置 - 所有选项默认设置为不安全状态
+security:
+  # 1. 特权容器 (违反: 禁止特权容器)
+  allowPrivileged: true  # true = 允许特权模式 (不安全), false = 禁止特权模式 (安全)
+
+  # 2. 以root运行 (违反: 禁止以root运行)
+  runAsRoot: true        # true = 以root用户运行 (不安全), false = 以非root用户运行 (安全)
+  runAsUser: 0           # UID=0 是root用户
+  runAsNonRoot: false    # false = 允许以root运行 (不安全), true = 禁止以root运行 (安全)
+
+  # 3. Seccomp配置 (违反: 启用seccomp)
+  seccomp:
+    enabled: false       # false = 禁用seccomp (不安全), true = 启用seccomp (安全)
+    # 可选值: RuntimeDefault, Localhost, Unconfined
+    type: Unconfined     # Unconfined = 无限制 (不安全), RuntimeDefault = 使用运行时默认配置 (安全)
+    # 本地配置文件路径 (当type=Localhost时使用)
+    localhostProfile: ""
+
+  # 4. 根文件系统 (违反: 只读根文件系统)
+  readOnlyRootFilesystem: false  # false = 可写根文件系统 (不安全), true = 只读根文件系统 (安全)
+
+# 容器配置
+container:
+  # 保持容器一直运行的命令
+  command: ["sh", "-c"]
+  args: |
+    echo "==============================================="
+    echo "SECURITY TEST CONTAINER - CONFIGURATION REPORT"
+    echo "==============================================="
+    echo "Privileged mode: {{ .Values.security.allowPrivileged }}"
+    echo "Running as root: {{ .Values.security.runAsRoot }} (UID={{ .Values.security.runAsUser }})"
+    echo "Seccomp enabled: {{ .Values.security.seccomp.enabled }} (Type: {{ .Values.security.seccomp.type }})"
+    echo "Read-only filesystem: {{ .Values.security.readOnlyRootFilesystem }}"
+    echo "-----------------------------------------------"
+    echo "Runtime environment checks:"
+    
+    # 检查容器是否特权模式
+    echo -n "Privileged runtime check: "
+    if grep -q "privileged" /proc/self/status; then
+      echo "YES (privileged)"
+    else
+      echo "NO (not privileged)"
+    fi
+    
+    # 检查当前用户
+    echo "Current user: $(whoami) (UID=$(id -u), GID=$(id -g))"
+    
+    # 检查 seccomp 状态
+    echo -n "Seccomp status: "
+    if [ -f /proc/1/status ]; then
+      SECCOMP_STATUS=$(grep Seccomp /proc/1/status | awk '{print $2}')
+      case "$SECCOMP_STATUS" in
+        0) echo "DISABLED (0)" ;;
+        1) echo "FILTERING (1)" ;;
+        2) echo "STRICT (2)" ;;
+        *) echo "UNKNOWN ($SECCOMP_STATUS)" ;;
+      esac
+    else
+      echo "Cannot determine"
+    fi
+    
+    # 检查文件系统是否只读
+    echo -n "Root filesystem: "
+    if touch /tmp/test_file 2>/dev/null && rm /tmp/test_file 2>/dev/null; then
+      echo "READ-WRITE"
+    else
+      echo "READ-ONLY"
+    fi
+    
+    # 检查挂载点
+    echo "Filesystem mounts:"
+    mount | grep "on / "
+    
+    echo "-----------------------------------------------"
+    echo "Container will stay running for security testing"
+    echo "==============================================="
+    
+    # 持续运行
+    tail -f /dev/null
+
+# 资源请求
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 50m
+  limits:
+    memory: 128Mi
+    cpu: 200m
+
+# 副本数
+replicaCount: 1
+
+# 其他配置
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: privileged-alpine
+description: A Helm chart for running Alpine Linux in privileged mode
+type: application
+version: 0.1.0
+appVersion: "3.23.2"

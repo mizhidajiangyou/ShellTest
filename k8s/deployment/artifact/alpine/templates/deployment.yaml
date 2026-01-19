@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insecure-test.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "insecure-test.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "insecure-test.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "insecure-test.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        {{- if .Values.security.seccomp.enabled }}
+        container.seccomp.security.alpha.kubernetes.io/{{ .Chart.Name }}: "runtime/default"
+        {{- else }}
+        container.seccomp.security.alpha.kubernetes.io/{{ .Chart.Name }}: "unconfined"
+        {{- end }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "===============================================";
+              echo "SECURITY TEST CONTAINER - CONFIGURATION REPORT";
+              echo "===============================================";
+              echo "Privileged mode: {{ .Values.security.allowPrivileged }}";
+              echo "Running as root: {{ .Values.security.runAsRoot }} (UID={{ .Values.security.runAsUser }})";
+              echo "Seccomp enabled: {{ .Values.security.seccomp.enabled }} (Type: {{ .Values.security.seccomp.type }})";
+              echo "Read-only filesystem: {{ .Values.security.readOnlyRootFilesystem }}";
+              echo "-----------------------------------------------";
+              echo "Runtime environment checks:";
+
+              # 检查容器是否特权模式
+              echo -n "Privileged runtime check: ";
+              if grep -q "privileged" /proc/self/status; then
+                echo "YES (privileged)";
+              else
+                echo "NO (not privileged)";
+              fi;
+
+              # 检查当前用户
+              echo "Current user: $(whoami) (UID=$(id -u), GID=$(id -g))";
+
+              # 检查 seccomp 状态
+              echo -n "Seccomp status: ";
+              if [ -f /proc/1/status ]; then
+                SECCOMP_STATUS=$(grep Seccomp /proc/1/status | awk '{print $2}');
+                case "$SECCOMP_STATUS" in
+                  0) echo "DISABLED (0)" ;;
+                  1) echo "FILTERING (1)" ;;
+                  2) echo "STRICT (2)" ;;
+                  *) echo "UNKNOWN ($SECCOMP_STATUS)" ;;
+                esac;
+              else
+                echo "Cannot determine";
+              fi;
+
+              # 检查文件系统是否只读
+              echo -n "Root filesystem: ";
+              if touch /tmp/test_file 2>/dev/null && rm /tmp/test_file 2>/dev/null; then
+                echo "READ-WRITE";
+              else
+                echo "READ-ONLY";
+              fi;
+
+              # 检查挂载点
+              echo "Filesystem mounts:";
+              mount | grep "on / ";
+
+              echo "-----------------------------------------------";
+              echo "Container will stay running for security testing";
+              echo "===============================================";
+
+              # 持续运行
+              tail -f /dev/null
+          securityContext:
+            privileged: {{ .Values.security.allowPrivileged }}
+            readOnlyRootFilesystem: {{ .Values.security.readOnlyRootFilesystem }}
+          {{- if .Values.security.runAsRoot }}
+            runAsUser: 0
+          {{- else }}
+            runAsUser: 1000
+          {{- end }}
+            runAsNonRoot: {{ .Values.security.runAsNonRoot }}
+          {{- if .Values.security.allowPrivileged }}
+            capabilities:
+              add:
+                - ALL
+          {{- end }}
+          {{- if .Values.security.seccomp.enabled }}
+            seccompProfile:
+              type: RuntimeDefault
+          {{- else }}
+            seccompProfile:
+              type: {{ .Values.security.seccomp.type | quote }}
+            {{- if and (eq .Values.security.seccomp.type "Localhost") .Values.security.seccomp.localhostProfile }}
+              localhostProfile: {{ .Values.security.seccomp.localhostProfile | quote }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.security.seccomp.enabled }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      {{- else }}
+      securityContext:
+        seccompProfile:
+          type: {{ .Values.security.seccomp.type | quote }}
+      {{- end }}
+      restartPolicy: Always
