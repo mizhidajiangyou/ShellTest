@@ -83,7 +83,7 @@ function readConfig() {
         # exit 1
       fi
       # 导出变量
-      eval export "${varname}"="$(trim "${val}")"
+      eval export "${varname}"="$(trim "${val[@]}")"
     fi
   done <"${config_file}"
 }
