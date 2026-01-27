@@ -161,4 +161,123 @@ function check_service_health() {
 }
 
 
+function writeK8sUsefulSH() {
+  local write_path=${1:-artifact}
+  sendLog "start to make ${write_path} k8s scripts"
+  pushd "${write_path}" || exit 1
+  writeK8sStart
+  writeK8sStop
+  writeK8sRestart
+  writeK8sUpdate
+  writeK8sLog
+  writeK8sDescribe
+  writeK8sResources
+  popd || exit 1
+  sendLog "make ${write_path} k8s scripts end"
+}
+
+function writeK8sStart() {
+  if [ ! -f start.sh ]; then
+    sendLog "write start.sh" 0
+    cat >start.sh <<EOF
+#!/bin/bash
+
+
+helm install $(basename "$(pwd)") . --namespace "$(configParser "k8s" "namespace" "images.cfg" )" --create-namespace
+EOF
+    chmod +x start.sh
+  fi
+}
+
+function writeK8sStop() {
+  if [ ! -f stop.sh ]; then
+    sendLog "write stop.sh" 0
+    cat >stop.sh <<EOF
+#!/bin/bash
+
+helm delete $(basename "$(pwd)") --namespace "$(configParser "k8s" "namespace" "images.cfg" )"
+EOF
+    chmod +x stop.sh
+  fi
+}
+
+function writeK8sRestart() {
+  if [ ! -f restart.sh ]; then
+    sendLog "write restart.sh" 0
+    cat >restart.sh <<EOF
+#!/bin/bash
+
+helm rollback $(basename "$(pwd)") 0 --namespace "$(configParser "k8s" "namespace" "images.cfg" )"
+EOF
+    chmod +x restart.sh
+  fi
+}
+
+function writeK8sUpdate() {
+  if [ ! -f update.sh ]; then
+    sendLog "write update.sh" 0
+    cat >update.sh <<EOF
+#!/bin/bash
+
+helm upgrade $(basename "$(pwd)") . --namespace "$(configParser "k8s" "namespace" "images.cfg" )"
+EOF
+    chmod +x update.sh
+  fi
+}
+
+function writeK8sLog() {
+  if [ ! -f log.sh ]; then
+    sendLog "write log.sh" 0
+    cat >log.sh <<EOF
+#!/bin/bash
+
+# 获取pod名称
+POD_NAME=\$(kubectl get pods -n "$(configParser "k8s" "namespace" "images.cfg" )" -l app.kubernetes.io/instance="$(basename "$(pwd)")" -o jsonpath='{.items[0].metadata.name}')
+
+if [ -n "\$POD_NAME" ]; then
+  kubectl logs -f "\$POD_NAME" --namespace "$(configParser "k8s" "namespace" "images.cfg" )"
+else
+  echo "No pod found for release $(basename "$(pwd)")"
+fi
+EOF
+    chmod +x log.sh
+  fi
+}
+
+function writeK8sDescribe() {
+  if [ ! -f describe.sh ]; then
+    sendLog "write describe.sh" 0
+    cat >describe.sh <<EOF
+#!/bin/bash
+
+# 获取pod名称
+POD_NAME=\$(kubectl get pods -n "$(configParser "k8s" "namespace" "images.cfg" )" -l app.kubernetes.io/instance="$(basename "$(pwd)")" -o jsonpath='{.items[0].metadata.name}')
+
+if [ -n "\$POD_NAME" ]; then
+  kubectl describe pod "\$POD_NAME" --namespace "$(configParser "k8s" "namespace" "images.cfg" )"
+else
+  echo "No pod found for release $(basename "$(pwd)")"
+fi
+EOF
+    chmod +x describe.sh
+  fi
+}
+
+function writeK8sResources() {
+  if [ ! -f resources.sh ]; then
+    sendLog "write resources.sh" 0
+    cat >resources.sh <<EOF
+#!/bin/bash
+
+echo "=== Resources for release $RELEASE_NAME ==="
+echo "\n--- All Resources (using label selector) ---"
+kubectl get all -n "$(configParser "k8s" "namespace" "images.cfg" )" -l app.kubernetes.io/instance=$(basename "$(pwd)")
+
+EOF
+    chmod +x resources.sh
+  fi
+}
+
+
+
 setKubeConfig
