@@ -34,7 +34,7 @@ function sendLog() {
     ;;
   esac
   COLOR=$(enter_color "$COLOR")
-  printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1" >>"${LOG_FILE}"
+  printf "%-25s%s\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1" >>"${LOG_FILE:-shell.log}"
 
   if ${LOG_CONSOLE_PRINT}; then
     printf "$COLOR%-25s%s${Z_COLOR_COLLECTION[none]}\n" "$(date '+%Y-%m-%d %H:%M:%S.%3N')" " ${LEVEL}$1"

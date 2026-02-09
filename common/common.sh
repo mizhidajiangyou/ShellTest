@@ -81,6 +81,8 @@ function _main() {
 # 全局配置
 [global]
 find_layers = 1
+max_retries = 10
+retry_interval = 5
 
 # 日志
 [log]
