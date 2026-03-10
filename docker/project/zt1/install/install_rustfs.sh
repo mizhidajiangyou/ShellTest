@@ -20,7 +20,8 @@ docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "
 docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "${service_name}" "SECRETKEY" "secretKey")
 
 # 初始化桶
-mkdir -p ./artifact/${service_name}/data/test
+mkdir -p ./artifact/"${service_name}"/data/test
+chown -R 10001:10001 ./artifact/"${service_name}"/data/test
 
 chmod 777 -R  ./artifact/"${service_name}"/data
 
