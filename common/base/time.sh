@@ -26,13 +26,26 @@ function convert_timestamp() {
   date -d @$(($1 / 1000)) '+%Y-%m-%d'
 }
 
+
 function now_timestamp() {
-  date +%s%3N
+
+    if date --version >/dev/null 2>&1; then
+        date +%s%3N
+    else
+        date +%s%N | cut -c1-13
+    fi
 }
 
+
 function h_later_timestamp() {
-  local hour=${1:-24}
-  date -d "$hour hour" +%s%3N
+    local hour=${1:-24}
+    # 先检测系统类型
+    if date --version >/dev/null 2>&1; then
+        date -d "$hour hour" +%s%3N
+    else
+        local minutes=$(( $(echo "$hour * 60" | bc) ))
+        date -v "+${minutes}M" +%s%N | cut -c1-13
+    fi
 }
 
 function convert_timestamp_long() {

@@ -27,6 +27,13 @@ function urandomInt() {
   awk -v a="${num}" -v b=1 'BEGIN{print a+b-b}'
 }
 
+# 随机返回ture or false
+function randomBool() {
+    # 直接生成0/1随机数，更高效
+    local random_bit=$(LC_ALL=C tr -dc '01' < /dev/urandom 2>/dev/null | head -c 1)
+    [ "$random_bit" = "0" ] && echo true || echo false
+}
+
 # 随机长度的字符串
 function urandomStr() {
   local ur_length="${1:-20}"
