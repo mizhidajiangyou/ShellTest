@@ -23,14 +23,15 @@ jobs:
           echo "do run build.sh"
           export SHELL_HOME="$(pwd)/"
           bash ./docker/build/build.sh
-      - name: Build OpenClaw Docker image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build OpenClaw Docker image (multi-arch)
         run: |
-          echo "Building OpenClaw image"
+          echo "Building OpenClaw multi-arch image"
           export OPEN_CLAW_TAG=$(grep OPEN_CLAW_TAG docker/build/docker/openclaw/.env | cut -d '=' -f2)
           git clone https://github.com/openclaw/openclaw.git openclaw-temp
           cd openclaw-temp
           git checkout ${OPEN_CLAW_TAG}
-          docker build --build-arg OPENCLAW_INSTALL_BROWSER=1 --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1 -t mzdjy/build:openclaw-${OPEN_CLAW_TAG}-auto -f Dockerfile .
-          docker push mzdjy/build:openclaw-${OPEN_CLAW_TAG}-auto
+          docker buildx build --build-arg OPENCLAW_INSTALL_BROWSER=1 --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1 --platform linux/amd64,linux/arm64 -t mzdjy/build:openclaw-${OPEN_CLAW_TAG}-auto -f Dockerfile . --push
           cd ..
           rm -rf openclaw-temp
