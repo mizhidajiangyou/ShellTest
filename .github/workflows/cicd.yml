@@ -32,6 +32,6 @@ jobs:
           git clone https://github.com/openclaw/openclaw.git openclaw-temp
           cd openclaw-temp
           git checkout ${OPEN_CLAW_TAG}
-          docker buildx build --build-arg OPENCLAW_INSTALL_BROWSER=1 --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1 --platform linux/amd64,linux/arm64 -t mzdjy/build:openclaw-${OPEN_CLAW_TAG}-auto -f Dockerfile . --push
+          docker buildx build --build-arg OPENCLAW_INSTALL_BROWSER=0 --build-arg OPENCLAW_INSTALL_DOCKER_CLI=0 --platform linux/amd64,linux/arm64 -t mzdjy/build:openclaw-${OPEN_CLAW_TAG}-auto-2 -f Dockerfile . --push
           cd ..
           rm -rf openclaw-temp
