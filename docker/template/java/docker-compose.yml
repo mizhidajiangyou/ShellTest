@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  app:
+    image: uhub.service.ucloud.cn/mzdjy/amazoncorretto:8u492-alpine3.23
+    restart: always
+    privileged: true
+    container_name: java-app
+    environment:
+      - TZ=Asia/Shanghai
+    hostname: java-app
+    volumes:
+      - ./app.jar:/app/app.jar
+      - ./application.yml:/app/application.yml
+    ports:
+      - "38080:8080/tcp"
+    working_dir: /app
+    command: java -jar app.jar
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5M"
+        max-file: "10"
+    healthcheck:
+      test: curl http://localhost:8080/ || exit 1
+      interval: 10s
+      retries: 5
+      timeout: 10s
+      start_period: 10s
