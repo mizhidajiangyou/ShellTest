@@ -69,21 +69,28 @@ function replaceCompose() {
   replaceString "$1" "\{\{ $2 \}\}" "$3"
 }
 
+# 判断是否存在相同字符
 function checkRepeat() {
-  local my_array seen item
-  # shellcheck disable=SC2206
-  my_array=($*)
+  local -A seen=()
+  local item
 
-  declare -A seen
-  for item in "${my_array[@]}"; do
-    if [ -n "${seen[$item]}" ]; then
+  for item in "$@"; do
+    if [[ -v seen[$item] ]]; then
       sendLog "数组中存在相同字符串: $item" 3
       exit 1
-    else
-      seen[$item]=1
     fi
+    seen[$item]=1
   done
+}
 
+# 字符串去重
+function uniqueWords() {
+  awk '{
+    for (i = 1; i <= NF; i++)
+      if (!seen[$i]++)
+        printf "%s%s", (c++ ? " " : ""), $i
+    print ""
+  }' <<<"$1"
 }
 
 # 获取install_xxx.sh的xxx
