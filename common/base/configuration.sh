@@ -155,20 +155,27 @@ function filter_config_sections() {
     keep_map["$section"]=1
   done
 
-  local current_section find_section=false line
-  while read -r line; do
-    if [[ $line == \[*\]* ]]; then
-      current_section=$(extract_bracket_content "$line")
-      if [[ -v keep_map["$current_section"] ]]; then
+  local current_section="" find_section=false line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+
+    if [[ -z "$line" ]]; then
+      [[ "$find_section" == true ]] && echo ""
+      continue
+    fi
+
+    if [[ "$line" == "["* ]]; then
+      local tmp="${line#*[}"
+      current_section="${tmp%%]*}"
+      if [[ -n "${keep_map["$current_section"]+x}" ]]; then
         find_section=true
         echo "$line"
       else
         find_section=false
       fi
-    elif [[ $find_section == true ]]; then
+    elif [[ "$find_section" == true ]]; then
       echo "$line"
     fi
-  done <"$config_file"
+  done < "$config_file"
 
   return 0
 }
