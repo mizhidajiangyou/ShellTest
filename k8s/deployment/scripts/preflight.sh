@@ -154,6 +154,17 @@ function check_node_port_in_images() {
   done
 }
 
+# 检查artifact目录是否存在
+function check_artifact_dir() {
+  if [ ! -d "artifact" ]; then
+    sendLog "please do 'bash scripts/save_charts.sh' to get charts!" 3
+    exit 1
+  else
+    sendLog "检测到artifact目录存在" 0 g
+  fi
+}
+
+
 function main() {
 
   check_command_ok
