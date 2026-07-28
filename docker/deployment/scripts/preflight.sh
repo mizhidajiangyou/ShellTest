@@ -32,19 +32,28 @@ function check_command_ok() {
 }
 
 function check_port_ok() {
-  local service_list ser port
+  local service_list ser port_config port_key port_value port port_list
   service_list=$(configParser install service images.cfg)
   for ser in ${service_list[*]}; do
+    while IFS= read -r port_config; do
+      [[ -z "${port_config}" ]] && continue
+      port_key="${port_config%%=*}"
+      port_value="${port_config#*=}"
+      port_value="${port_value//[/}"
+      port_value="${port_value//]/}"
+      port_value="${port_value// /}"
 
-    port="$(configParser "${ser}" "port" images.cfg)"
-    # 校验port
-    if ! checkLocalPort "$port";then
-      sendLog "校验${ser}端口: ${port}被使用。" 3
-      exit 1
-    fi
-    sendLog "校验${ser}端口: ${port}可用。"
+      IFS=',' read -r -a port_list <<<"${port_value}"
+      for port in "${port_list[@]}"; do
+        [[ -z "${port}" ]] && continue
+        if ! checkLocalPort "${port}"; then
+          sendLog "校验${ser}.${port_key}端口: ${port}被使用。" 3
+          exit 1
+        fi
+        sendLog "校验${ser}.${port_key}端口: ${port}可用。"
+      done
+    done < <(getSectionKeysByPrefix "${ser}" "port" images.cfg)
   done
-
 }
 
 function check_ip_config() {
