@@ -179,3 +179,37 @@ function filter_config_sections() {
 
   return 0
 }
+
+# 获取配置文件中给入section以xxx开头的所有key
+function getSectionKeysByPrefix() {
+  local section="$1"
+  local prefix="$2"
+  local config_file="$3"
+
+  config_file=$(checkCfgFile "$config_file")
+
+  awk -v section="$section" -v prefix="$prefix" '
+    function trim_value(value) {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      return value
+    }
+
+    /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
+
+    $0 ~ "^[[:space:]]*\\[" section "\\][[:space:]]*$" {
+      in_section = 1
+      next
+    }
+
+    in_section && /^[[:space:]]*\[/ { exit }
+
+    in_section && index($0, "=") > 0 {
+      key = trim_value(substr($0, 1, index($0, "=") - 1))
+      val = trim_value(substr($0, index($0, "=") + 1))
+      if (index(key, prefix) == 1) {
+        print key "=" val
+      }
+    }
+  ' "$config_file"
+}
+
