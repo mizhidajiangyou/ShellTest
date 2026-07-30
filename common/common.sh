@@ -59,6 +59,7 @@ function source_all_base_function() {
   source string.sh
   source urandom.sh
   source communication.sh
+  source hostscontainer.sh
   source process.sh
   source signal.sh
   source time.sh
@@ -124,6 +125,8 @@ all = false
 use = true
 
 [hosts]
+# 主机操作基础镜像
+base_image = registry.example.com/shelltest/hosts-tools:latest
 # 主机地址列表
 machines = '192.168.0.1 192.168.0.2'
 
