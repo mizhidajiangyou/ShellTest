@@ -18,13 +18,14 @@ jobs:
 
       #
       - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build the Docker image
         run: |
           echo "do run build.sh"
           export SHELL_HOME="$(pwd)/"
+          export DOCKER_BUILD_PLATFORMS="linux/amd64,linux/arm64"
           bash ./docker/build/build.sh
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
       - name: Build OpenClaw Docker image (multi-arch)
         run: |
           echo "Building OpenClaw multi-arch image"

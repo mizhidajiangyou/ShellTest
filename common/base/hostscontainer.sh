@@ -66,7 +66,11 @@ function hostsContainerBuildImage() {
   image=$(hostsContainerImage "${2:-}") || return 1
 
   sendLog "build hosts image ${image} from ${dockerfile_dir}" 0
-  docker build -t "${image}" "${dockerfile_dir}"
+  if docker buildx version &>/dev/null; then
+    docker buildx build --platform "${DOCKER_BUILD_PLATFORMS:-linux/amd64,linux/arm64}" -t "${image}" "${dockerfile_dir}" --push
+  else
+    docker build -t "${image}" "${dockerfile_dir}"
+  fi
 }
 
 # 停止主机操作容器。
