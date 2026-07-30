@@ -140,3 +140,19 @@ function string_contains() {
     return 1
   fi
 }
+
+#序列化数组，去掉""、[]这类的特殊字符，序列化为for能直接使用的输出
+function normalize_args() {
+  printf '%s\n' "$*" | awk '{
+    gsub(/[\[\]]/, "")
+    s = $0; result = ""
+    while (match(s, /"[^"]*"|[^,[:space:]]+/)) {
+      item = substr(s, RSTART, RLENGTH)
+      s    = substr(s, RSTART + RLENGTH)
+      gsub(/^"|"$/, "", item)
+      if (item != "")
+        result = result (result ? " " : "") item
+    }
+    print result
+  }'
+}
