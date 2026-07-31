@@ -59,7 +59,6 @@ function source_all_base_function() {
   source string.sh
   source urandom.sh
   source communication.sh
-  source hostscontainer.sh
   source process.sh
   source signal.sh
   source time.sh
