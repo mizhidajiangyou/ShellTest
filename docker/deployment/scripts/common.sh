@@ -137,7 +137,13 @@ function for_service_do() {
 function runDocker() {
   local name=$1
   local image=$2
-  docker run --rm -itd --entrypoint /bin/sh --name "${name}" "${image}" -c "tail -f /dev/null"
+  local action=${3:-}
+  local docker_args=()
+  if [ "${action}" = "tmp" ]; then
+    mkdir -p .tmp
+    docker_args+=(-v "$(pwd)/.tmp:/tmp")
+  fi
+  docker run --rm -itd --entrypoint /bin/sh --name "${name}" "${docker_args[@]}" "${image}" -c "tail -f /dev/null"
 }
 
 function stopDocker() {
@@ -154,6 +160,23 @@ function cpDocker() {
     exit 1
   fi
 }
+
+
+function execDockerBash() {
+  local name=$1
+  local command
+  shift
+  command=$*
+  if docker exec "${name}" /bin/bash -c "${command} &>  /proc/1/fd/1"; then
+    sendLog "docker exec ${command} successful!" 0
+  else
+    sendLog "docker exec ${command} failed!" 3 r
+    sendLog "docker logs --tail 20 ${name}:" 2
+    docker logs --tail 20 "${name}"
+    exit 1
+  fi
+}
+
 
 function run_and_cp_from_docker() {
   local name=$1
@@ -211,11 +234,11 @@ function get_all_service_port() {
   local server_list ser local_ip config_file prefix
   config_file=images.cfg
   # shellcheck disable=SC2010
-  server_list=$(ls -1 artifact | grep -vE "sql|tgz" )
+  server_list=$(ls -1 artifact | grep -vE "sql|tgz")
   local_ip=$(configParser "network" "local_ip" "${config_file}")
   prefix=$(configParser "global" "prefix" "${config_file}")
   for ser in ${server_list[*]}; do
-     printf "%s\n" "${ser}:${local_ip}:$(configParser "${ser}" "port" "${config_file}"):${prefix}-$(configParser "${ser}" "name" images.cfg)"
+    printf "%s\n" "${ser}:${local_ip}:$(configParser "${ser}" "port" "${config_file}"):${prefix}-$(configParser "${ser}" "name" images.cfg)"
   done
 
 }
@@ -232,4 +255,3 @@ function config_common() {
   docker_compose_production=$(replaceDockerConfig "${docker_compose_production}" "global" "PREFIX" "prefix")
   echo "${docker_compose_production}"
 }
-
