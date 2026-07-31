@@ -55,7 +55,7 @@ function make_cluster_package() {
   mkdir -p .tmp
   # 压缩
   sendLog "make cluster_package.tar.gz "
-  tar -zcvf cluster_package.tar.gz . >>" ${LOG_FILE}"
+  tar -zcvf cluster_package.tar.gz . >> "${LOG_FILE}"
   mv cluster_package.tar.gz .tmp
   cp images.cfg .tmp
   checkFile ".tmp/cluster_package.tar.gz"
@@ -124,30 +124,82 @@ function do_cluster_install_node() {
   LOG_FILE="${old_log_file}"
 }
 
+function is_pid_running() {
+  local target_pid=$1 running_pid
+  for running_pid in $(jobs -pr); do
+    if [ "${running_pid}" = "${target_pid}" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+function print_tool_logs() {
+  local node_index=$1
+  local local_docker_name="${GLOBAL_PREFIX}-host-tool-${node_index}"
+  if docker ps -a --format '{{.Names}}' | grep -Fxq "${local_docker_name}"; then
+    sendLog "输出第$((node_index + 1))台主机临时容器最近日志：${local_docker_name}"
+    docker logs --tail 20 "${local_docker_name}"
+  fi
+}
+
 function do_cluster_install() {
-  local i pid failed=0
+  local i pid failed=0 finished=0 timeout start_time now elapsed
   local pids=()
+  local finished_nodes=()
   local failed_nodes=()
+  timeout="${GLOBAL_ALL_TIMEOUT:-600}"
+  start_time=$(date +%s)
+
   for ((i = 0; i < ${#SYSTEM_MACHINE[@]}; i++)); do
     do_cluster_install_node "${i}" &
     pids+=("$!")
-    sendLog "第$((i + 1))台主机部署任务已启动，日志：.tmp/cluster_install_node_${i}.log"
+    finished_nodes+=("0")
+    sendLog "第$((i + 1))台主机部署任务已启动，日志：docker logs -f ${GLOBAL_PREFIX}-host-tool-${i}"
   done
 
-  for ((i = 0; i < ${#pids[@]}; i++)); do
-    pid="${pids[$i]}"
-    if ! wait "${pid}"; then
+  while [ "${finished}" -lt "${#pids[@]}" ]; do
+    now=$(date +%s)
+    elapsed=$((now - start_time))
+    if [ "${elapsed}" -ge "${timeout}" ]; then
       failed=1
-      failed_nodes+=("${i}")
+      sendLog "等待部署超时，超时时间：${timeout}s" 3
+      for ((i = 0; i < ${#pids[@]}; i++)); do
+        if [ "${finished_nodes[$i]}" = "0" ]; then
+          failed_nodes+=("${i}")
+          kill "${pids[$i]}" 2>/dev/null || true
+          stop_tool "${GLOBAL_PREFIX}-host-tool-${i}"
+        fi
+      done
+      break
     fi
+
+    for ((i = 0; i < ${#pids[@]}; i++)); do
+      if [ "${finished_nodes[$i]}" = "1" ]; then
+        continue
+      fi
+
+      pid="${pids[$i]}"
+      if is_pid_running "${pid}"; then
+        print_tool_logs "${i}"
+        sleep 10
+      else
+        finished_nodes[$i]="1"
+        finished=$((finished + 1))
+        if ! wait "${pid}"; then
+          failed=1
+          failed_nodes+=("${i}")
+        fi
+      fi
+    done
   done
 
   if [ "${failed}" -ne 0 ]; then
-    sendLog "存在主机部署失败，失败节点日志最后20行如下：" 3
+    sendLog "存在主机部署失败，失败节点最后20条 ERROR 日志如下：" 3
     for i in "${failed_nodes[@]}"; do
-      sendLog "第$((i + 1))台主机日志：.tmp/cluster_install_node_${i}.log" 3
-      tail -n 20 ".tmp/cluster_install_node_${i}.log"
-      sendLog "更详细日志请查看：.tmp/cluster_install_node_${i}.log" 3
+      sendLog "第$((i + 1))台主机 ERROR 日志:" 3
+      grep "ERROR" ".tmp/cluster_install_node_${i}.log" | tail -n 20
+      sendLog "更详细日志请查看：.tmp/cluster_install_node_${i}.log；log看不出来的情况下看 docker logs -f ${GLOBAL_PREFIX}-host-tool-${i}" 3
     done
     exit 1
   fi
