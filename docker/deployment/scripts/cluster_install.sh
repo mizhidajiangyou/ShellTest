@@ -138,7 +138,7 @@ function print_tool_logs() {
   local node_index=$1
   local local_docker_name="${GLOBAL_PREFIX}-host-tool-${node_index}"
   if docker ps -a --format '{{.Names}}' | grep -Fxq "${local_docker_name}"; then
-    sendLog "输出第$((node_index + 1))台主机临时容器最近日志：${local_docker_name}"
+    sendLog "输出第$((node_index + 1))台主机临时容器最近日志：${local_docker_name}" 1 p
     docker logs --tail 20 "${local_docker_name}"
   fi
 }
